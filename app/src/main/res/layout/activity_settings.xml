@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context=".settings.SettingsActivity">
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profile_image"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:src="@drawable/profile_image"
+        app:civ_border_width="3dp"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        app:civ_border_color="@color/colorPrimary"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="username"
+        android:layout_below="@+id/profile_image"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:id="@+id/username"
+        android:gravity="center"
+        android:drawableStart="@drawable/edit_profile"
+        android:layout_marginTop="10dp"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="status"
+        android:gravity="center"
+        android:layout_below="@+id/username"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:id="@+id/status"
+        android:drawableStart="@drawable/edit_status"
+        android:layout_marginTop="10dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/status"
+        android:text="Update"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:id="@+id/btnupdate"/>
+
+
+
+</RelativeLayout>

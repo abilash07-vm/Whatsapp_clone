@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context=".loginandsignup.PhoneVerficationActivity">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number with country Code"
+            android:gravity="center"
+            android:id="@+id/txtPhoneNumber"
+            android:drawableStart="@drawable/ic_phone"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="verify"
+            android:layout_marginTop="10dp"
+            android:id="@+id/btnVerify" />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter 6 digit code"
+            android:gravity="center"
+            android:layout_marginTop="30dp"
+            android:id="@+id/txtVerficationCode"
+            android:visibility="gone"
+            android:drawableStart="@drawable/ic_code"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="submit"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            android:id="@+id/btnSubmit" />
+    </LinearLayout>
+
+</RelativeLayout>

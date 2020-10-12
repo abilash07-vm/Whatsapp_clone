@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".loginandsignup.LoginActivity"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome to Whatsapp , login to continue."
+        android:textSize="20sp"
+        android:layout_marginTop="30dp"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginBottom="50dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#EC1B09"
+        android:text="Invalid email"
+        android:layout_marginTop="20dp"
+        android:id="@+id/invalidemail"
+        android:visibility="gone"
+        android:textSize="20sp"/>
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:hint="Email"
+        android:id="@+id/loginemail" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:id="@+id/loginpassword"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Forgot Password ?"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="10dp"
+        android:id="@+id/forgotPassword"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Login"
+        android:id="@+id/btnLogin"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign up New account"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:id="@+id/signUpNewAccount"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="or login using Phone"
+        android:layout_gravity="center"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginTop="20dp"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login using phone"
+        android:layout_marginTop="20dp"
+        android:id="@+id/btnLoginUsingPhone"/>
+
+
+
+
+</LinearLayout>
