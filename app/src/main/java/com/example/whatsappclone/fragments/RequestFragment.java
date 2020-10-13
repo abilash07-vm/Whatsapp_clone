@@ -49,67 +49,69 @@ public class RequestFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        FirebaseRecyclerOptions<Contact> options=new FirebaseRecyclerOptions.Builder<Contact>()
-                .setQuery(chatRef.child(sender),Contact.class)
-                .build();
-        FirebaseRecyclerAdapter<Contact,reqViewHolder> adapter=new FirebaseRecyclerAdapter<Contact, reqViewHolder>(options) {
-            @Override
-            protected void onBindViewHolder(@NonNull final reqViewHolder holder, int position, @NonNull Contact model) {
-                receiver=getRef(position).getKey();
-                userRef.child(receiver).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if(snapshot.exists()){
-                            holder.name.setText(snapshot.child("name").getValue().toString());
-                            holder.status.setText(snapshot.child("status").getValue().toString());
-                            if(snapshot.child("image").getValue()!=null)
-                            Glide.with(getContext())
-                                    .asBitmap()
-                                    .load(snapshot.child("image").getValue().toString())
-                                    .into(holder.image);
-                            holder.btnAccept.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    contactRef.child(sender).child(receiver).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if(task.isSuccessful()){
-                                                contactRef.child(receiver).child(sender).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        cancelRequset();
-                                                    }
-                                                });
+        if(sender!=null) {
+            FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
+                    .setQuery(chatRef.child(sender), Contact.class)
+                    .build();
+            FirebaseRecyclerAdapter<Contact, reqViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, reqViewHolder>(options) {
+                @Override
+                protected void onBindViewHolder(@NonNull final reqViewHolder holder, int position, @NonNull Contact model) {
+                    receiver = getRef(position).getKey();
+                    userRef.child(receiver).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                holder.name.setText(snapshot.child("name").getValue().toString());
+                                holder.status.setText(snapshot.child("status").getValue().toString());
+                                if (snapshot.child("image").getValue() != null)
+                                    Glide.with(getContext())
+                                            .asBitmap()
+                                            .load(snapshot.child("image").getValue().toString())
+                                            .into(holder.image);
+                                holder.btnAccept.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        contactRef.child(sender).child(receiver).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    contactRef.child(receiver).child(sender).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            cancelRequset();
+                                                        }
+                                                    });
+                                                }
                                             }
-                                        }
-                                    });
-                                }
-                            });
-                            holder.btnReject.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    cancelRequset();
-                                }
-                            });
+                                        });
+                                    }
+                                });
+                                holder.btnReject.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        cancelRequset();
+                                    }
+                                });
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
 
-                    }
-                });
-            }
+                        }
+                    });
+                }
 
-            @NonNull
-            @Override
-            public reqViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view=LayoutInflater.from(parent.getContext()).inflate(R.layout.request_model,parent,false);
-                return new reqViewHolder(view);
-            }
-        };
-        reqRecyView.setAdapter(adapter);
-        adapter.startListening();
+                @NonNull
+                @Override
+                public reqViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.request_model, parent, false);
+                    return new reqViewHolder(view);
+                }
+            };
+            reqRecyView.setAdapter(adapter);
+            adapter.startListening();
+        }
     }
 
 //    private void cancelRequest() {
@@ -164,7 +166,12 @@ public class RequestFragment extends Fragment {
 
     private void initViews(View view) {
             reqRecyView=view.findViewById(R.id.requestRecyView);
-            sender= FirebaseAuth.getInstance().getUid();
+            try {
+                sender= FirebaseAuth.getInstance().getCurrentUser().getUid();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
             reqRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
             chatRef= FirebaseDatabase.getInstance().getReference().child("ChatRequest");
             contactRef=FirebaseDatabase.getInstance().getReference().child("Contact");

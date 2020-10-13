@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.fragments.ChatsFragment;
 import com.example.whatsappclone.fragments.GroupFragments;
+import com.example.whatsappclone.fragments.RequestFragment;
 
 
 public class Adapter extends FragmentPagerAdapter {
@@ -31,6 +32,8 @@ public class Adapter extends FragmentPagerAdapter {
         switch (position){
             case 0:
                 return new ChatsFragment();
+            case 1:
+                return new RequestFragment();
             case 2:
                 return new GroupFragments();
             default:

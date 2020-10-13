@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 
+import com.example.whatsappclone.Activity.ContactActivity;
 import com.example.whatsappclone.loginandsignup.LoginActivity;
 import com.example.whatsappclone.settings.FindFriendsActivity;
 import com.example.whatsappclone.settings.SettingsActivity;
@@ -105,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent=new Intent(MainActivity.this, ContactActivity.class);
+                startActivity(intent);
             }
         });
     }

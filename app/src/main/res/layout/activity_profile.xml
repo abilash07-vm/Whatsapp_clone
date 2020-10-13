@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileActivity">
+    tools:context=".Activity.ProfileActivity">
     <de.hdodenhof.circleimageview.CircleImageView
         android:layout_width="250dp"
         android:layout_height="200dp"
@@ -43,6 +43,15 @@
         android:text="Request"
         android:layout_centerHorizontal="true"
         android:id="@+id/btnRequest"/>
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_below="@+id/btnRequest"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="Reject"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/btnCancel"/>
 
 
 </RelativeLayout>

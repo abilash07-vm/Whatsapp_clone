@@ -17,15 +17,13 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.Contact;
-import com.example.whatsappclone.ProfileActivity;
+import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.util.ArrayList;
 
 public class FindFriendsActivity extends AppCompatActivity {
     public static final String profile_key="key";

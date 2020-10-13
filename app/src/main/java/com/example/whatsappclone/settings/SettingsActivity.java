@@ -74,15 +74,20 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    if(dataSnapshot.hasChild("name")){
-                        name.setText(dataSnapshot.child("name").getValue().toString());
+                    try {
+                        if(dataSnapshot.hasChild("name")){
+                            name.setText(dataSnapshot.child("name").getValue().toString());
+                        }
+                        if(dataSnapshot.hasChild("status")){
+                            status.setText(dataSnapshot.child("status").getValue().toString());
+                        }
+                        if(dataSnapshot.hasChild("image")){
+                            Glide.with(SettingsActivity.this).asBitmap().load(dataSnapshot.child("image").getValue().toString()).into(profileImage);
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
-                    if(dataSnapshot.hasChild("status")){
-                        status.setText(dataSnapshot.child("status").getValue().toString());
-                    }
-                    if(dataSnapshot.hasChild("image")){
-                        Glide.with(SettingsActivity.this).asBitmap().load(dataSnapshot.child("Image").getValue().toString()).into(profileImage);
-                    }
+
                 }
             }
 
