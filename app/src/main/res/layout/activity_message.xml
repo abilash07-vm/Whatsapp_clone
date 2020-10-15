@@ -5,22 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#B5B2B2"
-    tools:context=".FragmentsActivity.MessageActivity">
+    tools:context=".Activity.MessageActivity">
     <com.google.android.material.appbar.MaterialToolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/menu"
         android:id="@+id/toolbar"
         android:background="@color/colorPrimary">
         <ImageView
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:src="@drawable/ic_back"
+            android:layout_marginRight="10dp"
             android:id="@+id/btnBack"/>
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/profile_image"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:id="@+id/Image"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="Group Name"
+            android:textColor="#fff"
             android:textStyle="bold"
             android:textSize="20sp"
             android:id="@+id/grpName"
@@ -41,9 +51,10 @@
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="5dp"
-        app:cardElevation="7dp"
+        app:cardCornerRadius="7dp"
+        app:cardElevation="10dp"
         android:id="@+id/cardview"
+        android:layout_marginLeft="10dp"
         android:layout_alignParentBottom="true">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -53,7 +64,9 @@
                 android:layout_height="wrap_content"
                 android:minHeight="50dp"
                 android:hint="Enter Message here"
+                android:gravity="center"
                 android:id="@+id/txtMessage"
+                android:background="#FFFFFF"
                 android:textSize="20sp"/>
             <ImageView
                 android:layout_width="50dp"

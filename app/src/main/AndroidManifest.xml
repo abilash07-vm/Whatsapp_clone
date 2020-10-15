@@ -13,11 +13,12 @@
         android:roundIcon="@drawable/whatsappicon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.ContactActivity"></activity>
+        <activity android:name=".Activity.GroupInfoActivity"></activity>
+        <activity android:name=".Activity.ContactActivity" />
         <activity android:name=".Activity.ProfileActivity" />
         <activity android:name=".settings.FindFriendsActivity" />
         <activity android:name=".loginandsignup.PhoneVerficationActivity" />
-        <activity android:name=".FragmentsActivity.MessageActivity" />
+        <activity android:name=".Activity.MessageActivity" />
         <activity android:name=".settings.SettingsActivity" />
         <activity android:name=".loginandsignup.SignupActivity" />
         <activity android:name=".loginandsignup.LoginActivity" />

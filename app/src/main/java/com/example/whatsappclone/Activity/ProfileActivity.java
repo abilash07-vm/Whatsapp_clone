@@ -116,6 +116,7 @@ public class ProfileActivity extends AppCompatActivity {
                     Log.d(TAG, "onDataChange: "+snapshot.child(sender).toString());
                     String status=snapshot.child(reciever).child("request_status").getValue().toString();
                     if(status.equals("request_sent")) {
+                        btnCancel.setVisibility(View.GONE);
                         btnRequest.setText("Cancel Request");
                     } else if(status.equals("request_received")){
                         currStatus="received";

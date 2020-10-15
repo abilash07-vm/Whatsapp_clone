@@ -112,7 +112,7 @@ public class FindFriendsActivity extends AppCompatActivity {
             name=itemView.findViewById(R.id.Name);
             status=itemView.findViewById(R.id.Status);
             image=itemView.findViewById(R.id.Image);
-            online=itemView.findViewById(R.id.online);
+//            online=itemView.findViewById(R.id.online);
         }
     }
 

@@ -11,9 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.whatsappclone.FragmentsActivity.MessageActivity;
-import com.example.whatsappclone.R;
-import com.example.whatsappclone.FragmentsActivity.MessageActivity;
+import com.example.whatsappclone.Activity.MessageActivity;
 import com.example.whatsappclone.R;
 import com.google.android.material.card.MaterialCardView;
 
@@ -42,6 +40,12 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         holder.grpName.setText(grpNames.get(position));
+        holder.grpIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
         holder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -129,7 +129,20 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if(task.isSuccessful()){
-                                                Toast.makeText(MainActivity.this,"Creted Sucessfully",Toast.LENGTH_LONG).show();
+                                                reference.child("Groups").child(grpName.getText().toString()).child("Members").child(currentUser.getUid()).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        if(task.isSuccessful()){
+                                                            reference.child("User").child("userGrp").child(currentUser.getUid()).child(grpName.getText().toString()).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task<Void> task) {
+                                                                    Toast.makeText(MainActivity.this,"Creted Sucessfully",Toast.LENGTH_LONG).show();
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
                                             }
                                         }
                                     });

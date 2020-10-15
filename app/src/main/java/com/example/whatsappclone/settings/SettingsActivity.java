@@ -63,10 +63,9 @@ public class SettingsActivity extends AppCompatActivity {
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                Intent intent = new Intent();
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-//                intent.setType("image/*");
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setType("image/*");
                 startActivityForResult(intent,GALLERY_REQUEST_CODE);
             }
         });
@@ -152,11 +151,11 @@ public class SettingsActivity extends AppCompatActivity {
         }else if(TextUtils.isEmpty(userStatus)){
             Toast.makeText(SettingsActivity.this,"please enter your status",Toast.LENGTH_LONG).show();
         }else{
-            Hashtable<String,String> profileMap=new Hashtable<>();
+            Hashtable<String,Object> profileMap=new Hashtable<>();
             profileMap.put("uid",userid);
             profileMap.put("name",userName);
             profileMap.put("status",userStatus);
-            reference.child("User").child(userid).setValue(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            reference.child("User").child(userid).updateChildren(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if(task.isSuccessful()){
