@@ -36,7 +36,7 @@
 
     <Button
         android:layout_width="200dp"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/profile_Status"
         android:layout_marginTop="40dp"
         android:gravity="center"

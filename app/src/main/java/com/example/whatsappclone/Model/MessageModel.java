@@ -15,6 +15,9 @@ public class MessageModel {
         this.time = time;
     }
 
+    public MessageModel() {
+    }
+
     public MessageModel(String sender, String message, String date, String time) {
         this.sender = sender;
         this.message = message;

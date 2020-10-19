@@ -13,12 +13,13 @@
         android:roundIcon="@drawable/whatsappicon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.GroupInfoActivity"></activity>
+        <activity android:name=".Activity.PrivateMesaageActivity"></activity>
+        <activity android:name=".Activity.GroupInfoActivity" />
         <activity android:name=".Activity.ContactActivity" />
         <activity android:name=".Activity.ProfileActivity" />
         <activity android:name=".settings.FindFriendsActivity" />
         <activity android:name=".loginandsignup.PhoneVerficationActivity" />
-        <activity android:name=".Activity.MessageActivity" />
+        <activity android:name=".Activity.GroupMessageActivity" />
         <activity android:name=".settings.SettingsActivity" />
         <activity android:name=".loginandsignup.SignupActivity" />
         <activity android:name=".loginandsignup.LoginActivity" />
@@ -35,6 +36,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".MyFireBaseMessingService" />
     </application>
 
 </manifest>

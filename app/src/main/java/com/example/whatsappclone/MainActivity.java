@@ -7,6 +7,8 @@ import android.graphics.PorterDuff;
 import android.os.Bundle;
 
 import com.example.whatsappclone.Activity.ContactActivity;
+import com.example.whatsappclone.Activity.GroupMessageActivity;
+import com.example.whatsappclone.Model.State;
 import com.example.whatsappclone.loginandsignup.LoginActivity;
 import com.example.whatsappclone.settings.FindFriendsActivity;
 import com.example.whatsappclone.settings.SettingsActivity;
@@ -14,7 +16,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
     private FirebaseUser currentUser;
     private Adapter adapter;
@@ -48,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton btn;
     private FirebaseAuth firebaseAuth;
     private MaterialToolbar toolbar;
-    private DatabaseReference reference;
+    private DatabaseReference rootRef,grpRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,25 +131,39 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if(grpName!=null){
-                            reference.child("Groups").child(grpName.getText().toString()).setValue("")
+                            final String txtGroupName=grpName.getText().toString();
+                            rootRef.child("Groups").child(grpName.getText().toString()).setValue("")
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if(task.isSuccessful()){
-                                                reference.child("Groups").child(grpName.getText().toString()).child("Members").child(currentUser.getUid()).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                rootRef.child("Groups").child(txtGroupName).child("Members").child(currentUser.getUid()).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
                                                     @Override
                                                     public void onComplete(@NonNull Task<Void> task) {
                                                         if(task.isSuccessful()){
-                                                            reference.child("User").child("userGrp").child(currentUser.getUid()).child(grpName.getText().toString()).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                            rootRef.child("UserGroup").child(currentUser.getUid()).child(txtGroupName).child("type").setValue("admin").addOnCompleteListener(new OnCompleteListener<Void>() {
                                                                 @Override
                                                                 public void onComplete(@NonNull Task<Void> task) {
-                                                                    Toast.makeText(MainActivity.this,"Creted Sucessfully",Toast.LENGTH_LONG).show();
+                                                                    final Map<String,Object> stateMap=new HashMap<>();
+                                                                    stateMap.put("timestamp",new Timestamp(System.currentTimeMillis()).getTime());
+                                                                    stateMap.put("name",txtGroupName);
+                                                                    stateMap.put("imglink",null);
+                                                                    FirebaseDatabase.getInstance().getReference().child("UserGroup").child(currentUser.getUid()).child(txtGroupName).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                        @Override
+                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                            if(task.isSuccessful()){
+                                                                                Toast.makeText(MainActivity.this,"Creted Sucessfully",Toast.LENGTH_LONG).show();
+                                                                            }
+                                                                        }
+                                                                    });
+
                                                                 }
                                                             });
 
                                                         }
                                                     }
                                                 });
+
                                             }
                                         }
                                     });
@@ -167,7 +188,23 @@ public class MainActivity extends AppCompatActivity {
         currentUser=firebaseAuth.getCurrentUser();
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        reference= FirebaseDatabase.getInstance().getReference();
+        rootRef = FirebaseDatabase.getInstance().getReference();
+        grpRef=rootRef.child("Group");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(currentUser!=null){
+            currentState("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(currentUser!=null)
+        currentState("offline");
     }
 
     @Override
@@ -178,13 +215,14 @@ public class MainActivity extends AppCompatActivity {
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }else{
+            currentState("online");
             String currUser=firebaseAuth.getUid();
-            reference.child("User").child(currUser).addValueEventListener(new ValueEventListener() {
+            rootRef.child("User").child(currUser).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if((dataSnapshot.child("name").exists())){
                         String name=dataSnapshot.child("name").getValue().toString();
-                        Toast.makeText(MainActivity.this,"welcome back "+name,Toast.LENGTH_SHORT).show();
+
                     }else{
                         Intent intent=new Intent(MainActivity.this, SettingsActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -205,5 +243,25 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater=getMenuInflater();
         inflater.inflate(R.menu.menu,menu);
         return true;
+    }
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        rootRef.child("User").child(currentUser.getUid()).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Toast.makeText(MainActivity.this,"welcome back ",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

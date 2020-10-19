@@ -1,5 +1,6 @@
 package com.example.whatsappclone.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.Activity.PrivateMesaageActivity;
 import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.R;
@@ -31,6 +33,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class RequestFragment extends Fragment {
     private static final String TAG = "RequestFragment";
@@ -55,7 +59,7 @@ public class RequestFragment extends Fragment {
                     .build();
             FirebaseRecyclerAdapter<Contact, reqViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, reqViewHolder>(options) {
                 @Override
-                protected void onBindViewHolder(@NonNull final reqViewHolder holder, int position, @NonNull Contact model) {
+                protected void onBindViewHolder(@NonNull final reqViewHolder holder, int position, @NonNull final Contact model) {
                     receiver = getRef(position).getKey();
                     userRef.child(receiver).addValueEventListener(new ValueEventListener() {
                         @Override
@@ -68,6 +72,25 @@ public class RequestFragment extends Fragment {
                                             .asBitmap()
                                             .load(snapshot.child("image").getValue().toString())
                                             .into(holder.image);
+                                chatRef.child(sender).child(receiver).child("request_status").addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        if(snapshot.exists()){
+                                            if(snapshot.getValue().equals("request_sent")){
+                                                holder.btnAccept.setVisibility(View.GONE);
+                                                holder.btnReject.setText("Cancel");
+                                            }else{
+                                                holder.btnAccept.setVisibility(View.VISIBLE);
+                                                holder.btnReject.setText("Reject");
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
                                 holder.btnAccept.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -92,6 +115,14 @@ public class RequestFragment extends Fragment {
                                         cancelRequset();
                                     }
                                 });
+                                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent intent=new Intent(getActivity(),ProfileActivity.class);
+                                        intent.putExtra(profile_key,receiver);
+                                        startActivity(intent);
+                                    }
+                                });
                             }
                         }
 
@@ -114,24 +145,6 @@ public class RequestFragment extends Fragment {
         }
     }
 
-//    private void cancelRequest() {
-//        chatRef.child(sender).child(receiver).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                if(task.isSuccessful()){
-//                    chatRef.child(receiver).child(sender).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<Void> task) {
-//                            if(task.isSuccessful()){
-//                                Log.d(TAG, "onComplete: Removed Request");
-//                            }
-//                        }
-//                    });
-//                }
-//            }
-//        });
-//
-//    }
     private void cancelRequset() {
         chatRef.child(sender).child(receiver).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

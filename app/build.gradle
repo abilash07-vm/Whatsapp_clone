@@ -35,6 +35,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics:17.6.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     implementation 'com.firebaseui:firebase-ui-database:6.3.0'
+    implementation 'com.google.firebase:firebase-messaging:20.3.0'
 
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

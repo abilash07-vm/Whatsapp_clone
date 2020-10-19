@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,9 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Model.MessageModel;
+import com.example.whatsappclone.Model.PrivateMessageModel;
 import com.example.whatsappclone.R;
-import com.example.whatsappclone.adaptors.MessageAdaptor;
+import com.example.whatsappclone.adaptors.PrivateMessageAdaptor;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -35,19 +36,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
 
-public class MessageActivity extends AppCompatActivity {
+public class GroupMessageActivity extends AppCompatActivity {
+    private static final String TAG = "GroupMessageActivity";
     private MaterialToolbar toolbar;
-    private ArrayList<MessageModel> messages=new ArrayList<>();
+    private ArrayList<PrivateMessageModel> messages=new ArrayList<>();
     private ImageView btnBack,btnSend;
     private EditText txtMessage;
     private TextView grpName;
@@ -55,15 +58,14 @@ public class MessageActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private String currUserName,currUserid;
     private String txtgrpName, message,currTime,currDate,grpMessageKey;
-    private MessageAdaptor messageAdaptor;
     private RecyclerView messageRecyview;
-    private NestedScrollView nestedScrollView;
+    private PrivateMessageAdaptor adaptor;
     private CircleImageView img;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState); 
-        setContentView(R.layout.activity_message);
+        setContentView(R.layout.activity_group_message);
 
 
         Intent intent=getIntent();
@@ -75,7 +77,7 @@ public class MessageActivity extends AppCompatActivity {
                 grpName.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent1=new Intent(MessageActivity.this, GroupInfoActivity.class);
+                        Intent intent1=new Intent(GroupMessageActivity.this, GroupInfoActivity.class);
                         intent1.putExtra(grpName_key,grpName.getText());
                         startActivity(intent1);
                     }
@@ -139,15 +141,16 @@ public class MessageActivity extends AppCompatActivity {
         currDate=sdfDate.format(calendar.getTime());
         currTime=sdfTime.format(calendar.getTime());
 
+        grpMessageKeyRef=grpRef.child("Messages").child(grpMessageKey);
         HashMap<String,Object> messageKey=new HashMap<>();
         grpRef.updateChildren(messageKey);
 
-        grpMessageKeyRef=grpRef.child("Messages").child(grpMessageKey);
-
         HashMap<String,Object> messageHashMap=new HashMap<>();
 
-        messageHashMap.put("name",currUserName);
+        messageHashMap.put("from",currUserid);
         messageHashMap.put("message", message);
+        messageHashMap.put("to",currUserid);
+        messageHashMap.put("type","text");
         messageHashMap.put("date",currDate);
         messageHashMap.put("time",currTime);
 
@@ -156,7 +159,47 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(!task.isSuccessful()){
-                    Toast.makeText(MessageActivity.this,"Something Went Wrong...",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GroupMessageActivity.this,"Something Went Wrong...",Toast.LENGTH_SHORT).show();
+                }else{
+                    final Map<String,Object> stateMap=new HashMap<>();
+                    stateMap.put("timestamp",new Timestamp(System.currentTimeMillis()).getTime());
+                    stateMap.put("name",txtgrpName);
+                    grpRef.child("image").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if(snapshot.exists()){
+                                stateMap.put("imglink",snapshot.getValue());
+                            }else{
+                                stateMap.put("imglink",null);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+
+                    grpRef.child("Members").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            for(DataSnapshot snap:snapshot.getChildren()){
+                                FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpName).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            Toast.makeText(GroupMessageActivity.this, "Suceesfully Added", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
                 }
             }
         });
@@ -168,6 +211,7 @@ public class MessageActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         if(txtgrpName!=null) {
+            currentState("online");
             grpRef.child("Messages").addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -198,7 +242,7 @@ public class MessageActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if(snapshot.exists()){
-                        Glide.with(MessageActivity.this)
+                        Glide.with(GroupMessageActivity.this)
                                 .asBitmap()
                                 .load(snapshot.getValue())
                                 .into(img);
@@ -214,37 +258,29 @@ public class MessageActivity extends AppCompatActivity {
     }
 
     private void DisplayMessages(DataSnapshot dataSnapshot) {
-        Iterator iterator=dataSnapshot.getChildren().iterator();
-        while(iterator.hasNext()){
-            String date=(String) ((DataSnapshot)iterator.next()).getValue();
-            String message=(String) ((DataSnapshot)iterator.next()).getValue();
-            String sender=(String) ((DataSnapshot)iterator.next()).getValue();
-            String time=(String) ((DataSnapshot)iterator.next()).getValue();
-
-            messages.add(new MessageModel(sender,message, date,time));
-        }
-        messageAdaptor.setMessages(messages);
-        nestedScrollView.fullScroll(NestedScrollView.FOCUS_DOWN);
+        PrivateMessageModel message=dataSnapshot.getValue(PrivateMessageModel.class);
+        messages.add(message);
+        adaptor.setMessages(messages);
         messageRecyview.smoothScrollToPosition(messageRecyview.getAdapter().getItemCount()+1);
     }
 
     private void initViews() {
         toolbar=findViewById(R.id.toolbar);
-        nestedScrollView=findViewById(R.id.messageNestedScrollView);
-        messageAdaptor=new MessageAdaptor(MessageActivity.this);
         messageRecyview=findViewById(R.id.messageRecyView);
-        messageRecyview.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
-        messageRecyview.setAdapter(messageAdaptor);
+        messageRecyview.setLayoutManager(new LinearLayoutManager(GroupMessageActivity.this));
+        firebaseAuth=FirebaseAuth.getInstance();
+        currUserid=firebaseAuth.getCurrentUser().getUid();
+        userRef= FirebaseDatabase.getInstance().getReference().child("User");
         grpName=findViewById(R.id.grpName);
         btnBack=findViewById(R.id.btnBack);
         btnSend=findViewById(R.id.btnSend);
         txtMessage=findViewById(R.id.txtMessage);
         img=findViewById(R.id.Image);
-        firebaseAuth=FirebaseAuth.getInstance();
-        currUserid=firebaseAuth.getCurrentUser().getUid();
-        userRef= FirebaseDatabase.getInstance().getReference().child("User");
+
         if(txtgrpName!=null)
         grpRef=FirebaseDatabase.getInstance().getReference().child("Groups").child(txtgrpName);
+        adaptor=new PrivateMessageAdaptor(GroupMessageActivity.this);
+        messageRecyview.setAdapter(adaptor);
         userRef.child(currUserid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -256,6 +292,41 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(currUserid!=null){
+            currentState("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(currUserid!=null) {
+            currentState("offline");
+        }
+    }
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        userRef.child(currUserid).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Log.d(TAG, "onComplete: welcome back");
+                }
             }
         });
     }

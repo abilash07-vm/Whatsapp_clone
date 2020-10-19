@@ -1,8 +1,10 @@
 package com.example.whatsappclone.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +24,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
@@ -32,7 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
     private CircleImageView profileImage;
     private TextView profileName,profileStatus;
     private Button btnRequest,btnCancel;
-    private String reciever,sender,currStatus="new";
+    private String reciever,sender;
     private FirebaseAuth auth;
 
     @Override
@@ -71,6 +78,40 @@ public class ProfileActivity extends AppCompatActivity {
                             });
                             cancelRequset();
                         }
+                        else{
+                            AlertDialog.Builder builder=new AlertDialog.Builder(ProfileActivity.this)
+                                    .setTitle("UnFriend")
+                                    .setMessage("Do want to Umfriend "+ reciever)
+                                    .setPositiveButton("Unfriend", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            cancelRequset();
+                                            contactRef.child(sender).child(reciever).child("contact").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    contactRef.child(reciever).child(sender).child("contact").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                            if(task.isSuccessful()){
+                                                                Toast.makeText(ProfileActivity.this, "Unfriend Successfully", Toast.LENGTH_SHORT).show();
+                                                                btnRequest.setText("Request");
+                                                                btnCancel.setVisibility(View.GONE);
+                                                            }
+
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    });
+                            builder.create().show();
+                        }
                     }
                 });
                 btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -91,9 +132,7 @@ public class ProfileActivity extends AppCompatActivity {
                     chatRef.child(reciever).child(sender).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
-                                Toast.makeText(ProfileActivity.this, "Request Cancelled", Toast.LENGTH_SHORT).show();
-                            }
+                            Log.d(TAG, "onComplete: Removed Request");
                         }
                     });
                 }
@@ -109,6 +148,7 @@ public class ProfileActivity extends AppCompatActivity {
             btnRequest.setVisibility(View.GONE);
             return;
         }
+        currentState("online");
         chatRef.child(sender).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -119,7 +159,6 @@ public class ProfileActivity extends AppCompatActivity {
                         btnCancel.setVisibility(View.GONE);
                         btnRequest.setText("Cancel Request");
                     } else if(status.equals("request_received")){
-                        currStatus="received";
                         btnRequest.setText("Accept request");
                         btnCancel.setVisibility(View.VISIBLE);
                     }
@@ -162,7 +201,7 @@ public class ProfileActivity extends AppCompatActivity {
                             if(task.isSuccessful()){
                                 Toast.makeText(ProfileActivity.this,"Request Sent",Toast.LENGTH_SHORT).show();
                                 btnRequest.setText("Cancel Request");
-                                currStatus="sent";
+
                             }
                         }
                     });
@@ -210,5 +249,40 @@ public class ProfileActivity extends AppCompatActivity {
         auth=FirebaseAuth.getInstance();
         sender=auth.getCurrentUser().getUid();
     }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(sender!=null){
+            currentState("offline");
+        }
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(sender!=null) {
+            currentState("offline");
+        }
+    }
+
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        FirebaseDatabase.getInstance().getReference().child("User").child(sender).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Log.d(TAG, "onComplete: welcome back");
+                }
+            }
+        });
+    }
 }

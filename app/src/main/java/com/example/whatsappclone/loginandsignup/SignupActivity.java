@@ -125,7 +125,7 @@ public class SignupActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 loadingBar.dismiss();
-                                String currentUserid=firebaseAuth.getUid();
+                                String currentUserid=firebaseAuth.getCurrentUser().getUid();
                                 rootReference.child("User").child(currentUserid).setValue("");
                                 Toast.makeText(SignupActivity.this,"Registered sucessfully...",Toast.LENGTH_SHORT).show();
                                 Intent intent=new Intent(SignupActivity.this, MainActivity.class);

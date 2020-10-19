@@ -20,6 +20,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -28,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView txtFrogetPass,txtSignUp,invalidemail;
     private FirebaseAuth firebaseAuth;
     private ProgressDialog loadingBar;
+    private DatabaseReference userRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,9 +94,20 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
-                                Toast.makeText(LoginActivity.this,"logged in sucessfully...",Toast.LENGTH_SHORT).show();
-                                Intent intent=new Intent(LoginActivity.this, MainActivity.class);
-                                startActivity(intent);
+                                String userId=firebaseAuth.getUid();
+                                String device_token= FirebaseInstanceId.getInstance().getToken();
+                                userRef.child(userId).child("device_token").setValue(device_token).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if(task.isSuccessful()){
+                                            Toast.makeText(LoginActivity.this,"logged in sucessfully...",Toast.LENGTH_SHORT).show();
+                                            Intent intent=new Intent(LoginActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    }
+                                });
+
+
                                 loadingBar.dismiss();
                             }else{
                                 Toast.makeText(LoginActivity.this,task.getException().toString(),Toast.LENGTH_LONG).show();
@@ -120,6 +135,7 @@ public class LoginActivity extends AppCompatActivity {
         txtSignUp=findViewById(R.id.signUpNewAccount);
         invalidemail=findViewById(R.id.invalidemail);
         firebaseAuth=FirebaseAuth.getInstance();
+        userRef= FirebaseDatabase.getInstance().getReference().child("User");
         loadingBar=new ProgressDialog(this);
     }
 

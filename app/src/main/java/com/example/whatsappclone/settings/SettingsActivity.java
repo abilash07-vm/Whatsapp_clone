@@ -9,12 +9,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.Activity.GroupMessageActivity;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -31,12 +33,16 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class SettingsActivity extends AppCompatActivity {
-
+    private static final String TAG = "SettingsActivity";
     private Button btnUpdate;
     private EditText name,status;
     private CircleImageView profileImage;
@@ -169,6 +175,60 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        reference.child("User").child(firebaseAuth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.hasChild("uid")){
+                    currentState("online");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(userid!=null){
+            currentState("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(userid!=null) {
+            currentState("offline");
+        }
+    }
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        reference.child("User").child(userid).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Log.d(TAG, "onComplete: welcom back "+userid);
+                }
+            }
+        });
     }
 
     private void initViews() {

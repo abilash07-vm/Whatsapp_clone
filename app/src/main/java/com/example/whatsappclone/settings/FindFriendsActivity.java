@@ -13,17 +13,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.Activity.GroupMessageActivity;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FindFriendsActivity extends AppCompatActivity {
     public static final String profile_key="key";
@@ -32,6 +42,7 @@ public class FindFriendsActivity extends AppCompatActivity {
     private ImageView btnBack;
     private RecyclerView friendsRecyView;
     private MaterialToolbar toolbar;
+    private String currUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +73,13 @@ public class FindFriendsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle("Find Friends");
         userRef= FirebaseDatabase.getInstance().getReference().child("User");
+        currUser= FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        currentState("online");
         FirebaseRecyclerOptions<Contact> options=new FirebaseRecyclerOptions.Builder<Contact>()
                 .setQuery(userRef, Contact.class)
                 .build();
@@ -114,6 +127,41 @@ public class FindFriendsActivity extends AppCompatActivity {
             image=itemView.findViewById(R.id.Image);
 //            online=itemView.findViewById(R.id.online);
         }
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(currUser!=null){
+            currentState("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(currUser!=null) {
+            currentState("offline");
+        }
+    }
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        userRef.child(currUser).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Toast.makeText(FindFriendsActivity.this,"welcome back ",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @Override

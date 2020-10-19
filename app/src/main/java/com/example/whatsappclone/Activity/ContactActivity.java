@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.MainActivity;
@@ -21,6 +22,8 @@ import com.example.whatsappclone.R;
 import com.example.whatsappclone.settings.FindFriendsActivity;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -28,6 +31,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class ContactActivity extends AppCompatActivity {
     private static final String TAG = "ContactActivity";
@@ -60,13 +70,14 @@ public class ContactActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        currentState("online");
         FirebaseRecyclerOptions<Contact> options=new FirebaseRecyclerOptions.Builder<Contact>()
                 .setQuery(contactRef,Contact.class)
                 .build();
         FirebaseRecyclerAdapter<Contact,contactViewHolder> adapter=new FirebaseRecyclerAdapter<Contact, contactViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final contactViewHolder holder, int position, @NonNull final Contact model) {
-                String key=getRef(position).getKey();
+                final String key=getRef(position).getKey();
                 Log.d(TAG, "onBindViewHolder: "+key);
                 userRef.child(key).addValueEventListener(new ValueEventListener() {
                     @Override
@@ -74,7 +85,20 @@ public class ContactActivity extends AppCompatActivity {
                         if(snapshot.exists()) {
                             holder.name.setText(snapshot.child("name").getValue().toString());
                             holder.status.setText(snapshot.child("status").getValue().toString());
-                            if(snapshot.child("image").getValue()!=null) {
+                            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Intent intent=new Intent(ContactActivity.this,ProfileActivity.class);
+                                    intent.putExtra(profile_key,key);
+                                    startActivity(intent);
+                                }
+                            });
+                            if(snapshot.child("state").exists() && snapshot.child("state").getValue().toString().equals("online")){
+                                holder.online.setVisibility(View.VISIBLE);
+                            }else {
+                                holder.online.setVisibility(View.GONE);
+                            }
+                            if(snapshot.hasChild("image")) {
                                 Glide.with(ContactActivity.this)
                                         .asBitmap()
                                         .placeholder(R.drawable.profile_image)
@@ -111,7 +135,7 @@ public class ContactActivity extends AppCompatActivity {
             name=itemView.findViewById(R.id.Name);
             status=itemView.findViewById(R.id.Status);
             image=itemView.findViewById(R.id.Image);
-//            online=itemView.findViewById(R.id.online);
+            online=itemView.findViewById(R.id.online);
         }
     }
 
@@ -124,6 +148,41 @@ public class ContactActivity extends AppCompatActivity {
         auth=FirebaseAuth.getInstance();
         currentUser=auth.getCurrentUser().getUid();
         contactRef= FirebaseDatabase.getInstance().getReference().child("Contact").child(currentUser);
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if(currentUser!=null){
+            currentState("offline");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(currentUser!=null) {
+            currentState("offline");
+        }
+    }
+    public void currentState(String state){
+        Calendar calendar=Calendar.getInstance();
+        String currentDate,currentTime;
+        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
+        currentDate=sdfDate.format(calendar.getTime());
+        currentTime=sdfTime.format(calendar.getTime());
+        Map<String,Object> stateMap=new HashMap<>();
+        stateMap.put("date",currentDate);
+        stateMap.put("time",currentTime);
+        stateMap.put("state",state);
+        userRef.child(currentUser).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isComplete()){
+                    Log.d(TAG, "onComplete: welcome back");
+                }
+            }
+        });
     }
 
 }

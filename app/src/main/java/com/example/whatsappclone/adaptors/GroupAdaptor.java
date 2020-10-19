@@ -11,22 +11,26 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.whatsappclone.Activity.MessageActivity;
+import com.bumptech.glide.Glide;
+import com.example.whatsappclone.Activity.GroupInfoActivity;
+import com.example.whatsappclone.Activity.GroupMessageActivity;
+import com.example.whatsappclone.Model.Dummy;
 import com.example.whatsappclone.R;
-import com.google.android.material.card.MaterialCardView;
 
 import java.util.ArrayList;
 
+import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
+
 public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> {
     private Context context;
-    private ArrayList<String> grpNames=new ArrayList<>();
+    private ArrayList<Dummy> groups =new ArrayList<>();
 
     public GroupAdaptor(Context context) {
         this.context = context;
     }
 
-    public void setGrpNames(ArrayList<String> grpNames) {
-        this.grpNames = grpNames;
+    public void setGroups(ArrayList<Dummy> groups) {
+        this.groups = groups;
         notifyDataSetChanged();
     }
 
@@ -39,18 +43,27 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        holder.grpName.setText(grpNames.get(position));
+        holder.grpName.setText(groups.get(position).getName());
+        if(groups.get(position).getImglink()!=null) {
+            Glide.with(context)
+                    .asBitmap()
+                    .load(groups.get(position).getImglink())
+                    .into(holder.grpIcon);
+        }
+
         holder.grpIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent=new Intent(context, GroupInfoActivity.class);
+                intent.putExtra(grpName_key,groups.get(position).getName());
+                context.startActivity(intent);
             }
         });
-        holder.cardView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context, MessageActivity.class);
-                intent.putExtra("name",grpNames.get(position));
+                Intent intent=new Intent(context, GroupMessageActivity.class);
+                intent.putExtra("name",groups.get(position).getName());
                 context.startActivity(intent);
             }
         });
@@ -59,18 +72,16 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return grpNames.size();
+        return groups.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private ImageView grpIcon;
         private TextView grpName;
-        private MaterialCardView cardView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             grpIcon=itemView.findViewById(R.id.groupicon);
             grpName=itemView.findViewById(R.id.groupName);
-            cardView=itemView.findViewById(R.id.cardview);
         }
     }
 }
