@@ -1,16 +1,14 @@
 package com.example.whatsappclone.loginandsignup;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
@@ -21,13 +19,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.concurrent.TimeUnit;
 
 public class PhoneVerficationActivity extends AppCompatActivity {
     private static final String TAG = "PhoneVerficationActivity";
-    private EditText txtPhoneNum,verificationCode;
-    private Button btnVerify,btnSubmit;
+    private EditText txtPhoneNum, verificationCode;
+    private Button btnVerify, btnSubmit;
     private String phoneNumber;
     private String verifationId;
     private PhoneAuthProvider.ForceResendingToken token;
@@ -43,11 +43,11 @@ public class PhoneVerficationActivity extends AppCompatActivity {
         btnVerify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                phoneNumber=txtPhoneNum.getText().toString();
-                if(phoneNumber.equals("") || phoneNumber.length()<10){
-                    Toast.makeText(PhoneVerficationActivity.this,"Invalid PhoneNumber",Toast.LENGTH_SHORT).show();
+                phoneNumber = txtPhoneNum.getText().toString();
+                if (phoneNumber.equals("") || phoneNumber.length() < 10) {
+                    Toast.makeText(PhoneVerficationActivity.this, "Invalid PhoneNumber", Toast.LENGTH_SHORT).show();
 
-                }else{
+                } else {
                     sendVerifationCode();
                 }
 
@@ -55,18 +55,16 @@ public class PhoneVerficationActivity extends AppCompatActivity {
         });
 
 
-
-
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btnSubmit.setEnabled(false);
-                String typedcode=verificationCode.getText().toString();
-                if(typedcode.equals("")){
-                    Toast.makeText(PhoneVerficationActivity.this,"Please enter the code to verify...",Toast.LENGTH_SHORT).show();
+                String typedcode = verificationCode.getText().toString();
+                if (typedcode.equals("")) {
+                    Toast.makeText(PhoneVerficationActivity.this, "Please enter the code to verify...", Toast.LENGTH_SHORT).show();
 
-                }else{
-                    PhoneAuthCredential credential=PhoneAuthProvider.getCredential(verifationId,typedcode);
+                } else {
+                    PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verifationId, typedcode);
                     signInWithPhoneNum(credential);
                 }
                 btnSubmit.setEnabled(true);
@@ -74,7 +72,7 @@ public class PhoneVerficationActivity extends AppCompatActivity {
             }
         });
 
-        callbacks=new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+        callbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
                 signInWithPhoneNum(phoneAuthCredential);
@@ -83,20 +81,19 @@ public class PhoneVerficationActivity extends AppCompatActivity {
 
             @Override
             public void onVerificationFailed(@NonNull FirebaseException e) {
-                Toast.makeText(PhoneVerficationActivity.this,e.getMessage(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(PhoneVerficationActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-                verifationId=s;
-                token=forceResendingToken;
-                Toast.makeText(PhoneVerficationActivity.this,"Code Sent...",Toast.LENGTH_SHORT).show();
+                verifationId = s;
+                token = forceResendingToken;
+                Toast.makeText(PhoneVerficationActivity.this, "Code Sent...", Toast.LENGTH_SHORT).show();
                 btnSubmit.setVisibility(View.VISIBLE);
                 verificationCode.setVisibility(View.VISIBLE);
             }
         };
     }
-
 
 
     private void sendVerifationCode() {
@@ -115,23 +112,33 @@ public class PhoneVerficationActivity extends AppCompatActivity {
         firebaseAuth.signInWithCredential(phoneAuthCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-                    Toast.makeText(PhoneVerficationActivity.this,"Account Created Sucessfully..",Toast.LENGTH_SHORT).show();
-                    Intent intent=new Intent(PhoneVerficationActivity.this, MainActivity.class);
-                    startActivity(intent);
-                }else{
-                    Toast.makeText(PhoneVerficationActivity.this,task.getException().toString(),Toast.LENGTH_SHORT).show();
+                if (task.isSuccessful()) {
+                    String userId = firebaseAuth.getUid();
+                    String device_token = FirebaseInstanceId.getInstance().getToken();
+                    FirebaseDatabase.getInstance().getReference().child("User").child(userId).child("device_token").setValue(device_token).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(PhoneVerficationActivity.this, "Account Created Sucessfully..", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(PhoneVerficationActivity.this, MainActivity.class);
+                                startActivity(intent);
+                            }
+                        }
+                    });
+
+                } else {
+                    Toast.makeText(PhoneVerficationActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
 
     private void initViews() {
-        txtPhoneNum=findViewById(R.id.txtPhoneNumber);
-        verificationCode=findViewById(R.id.txtVerficationCode);
-        btnSubmit=findViewById(R.id.btnSubmit);
-        btnVerify=findViewById(R.id.btnVerify);
-        firebaseAuth=FirebaseAuth.getInstance();
+        txtPhoneNum = findViewById(R.id.txtPhoneNumber);
+        verificationCode = findViewById(R.id.txtVerficationCode);
+        btnSubmit = findViewById(R.id.btnSubmit);
+        btnVerify = findViewById(R.id.btnVerify);
+        firebaseAuth = FirebaseAuth.getInstance();
         btnSubmit.setVisibility(View.GONE);
         verificationCode.setVisibility(View.GONE);
         btnVerify.setVisibility(View.VISIBLE);

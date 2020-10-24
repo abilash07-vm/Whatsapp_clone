@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Activity.PrivateMesaageActivity;
 import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.R;
@@ -32,19 +31,26 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.whatsappclone.MainActivity.currentState;
 import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class RequestFragment extends Fragment {
     private static final String TAG = "RequestFragment";
     private RecyclerView reqRecyView;
-    private DatabaseReference chatRef,userRef,contactRef;
-    private String sender,receiver;
+    private DatabaseReference chatRef, userRef, contactRef, rootRef;
+    private String sender, receiver;
+    private boolean isAccept = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=getActivity().getLayoutInflater().inflate(R.layout.request_fragment,container,false);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.request_fragment, container, false);
         initViews(view);
 
         return view;
@@ -53,7 +59,8 @@ public class RequestFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(sender!=null) {
+        if (sender != null) {
+            currentState("online");
             FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
                     .setQuery(chatRef.child(sender), Contact.class)
                     .build();
@@ -68,18 +75,18 @@ public class RequestFragment extends Fragment {
                                 holder.name.setText(snapshot.child("name").getValue().toString());
                                 holder.status.setText(snapshot.child("status").getValue().toString());
                                 if (snapshot.child("image").getValue() != null)
-                                    Glide.with(getContext())
+                                    Glide.with(getContext().getApplicationContext())
                                             .asBitmap()
                                             .load(snapshot.child("image").getValue().toString())
                                             .into(holder.image);
                                 chatRef.child(sender).child(receiver).child("request_status").addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if(snapshot.exists()){
-                                            if(snapshot.getValue().equals("request_sent")){
+                                        if (snapshot.exists()) {
+                                            if (snapshot.getValue().equals("request_sent")) {
                                                 holder.btnAccept.setVisibility(View.GONE);
                                                 holder.btnReject.setText("Cancel");
-                                            }else{
+                                            } else {
                                                 holder.btnAccept.setVisibility(View.VISIBLE);
                                                 holder.btnReject.setText("Reject");
                                             }
@@ -101,7 +108,34 @@ public class RequestFragment extends Fragment {
                                                     contactRef.child(receiver).child(sender).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {
+                                                            isAccept = true;
                                                             cancelRequset();
+                                                            final String receiverRef = receiver + "/" + sender, senderRef = sender + "/" + receiver;
+                                                            final Map messageBody = new HashMap();
+                                                            messageBody.put("from", receiver);
+                                                            messageBody.put("msgcount", 0);
+                                                            messageBody.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
+                                                            final Map messageDetails = new HashMap();
+                                                            messageDetails.put(senderRef, messageBody);
+                                                            rootRef.child("MessageState").updateChildren(messageDetails).addOnCompleteListener(new OnCompleteListener() {
+                                                                @Override
+                                                                public void onComplete(@NonNull Task task) {
+                                                                    if (task.isSuccessful()) {
+                                                                        messageDetails.clear();
+                                                                        messageBody.put("from", sender);
+                                                                        messageDetails.put(receiverRef, messageBody);
+                                                                        rootRef.child("MessageState").updateChildren(messageDetails).addOnCompleteListener(new OnCompleteListener() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task task) {
+                                                                                if (task.isSuccessful()) {
+                                                                                    Toast.makeText(getActivity(), "Contact saved Successfully", Toast.LENGTH_SHORT).show();
+                                                                                }
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                }
+                                                            });
+
                                                         }
                                                     });
                                                 }
@@ -118,8 +152,8 @@ public class RequestFragment extends Fragment {
                                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        Intent intent=new Intent(getActivity(),ProfileActivity.class);
-                                        intent.putExtra(profile_key,receiver);
+                                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                                        intent.putExtra(profile_key, receiver);
                                         startActivity(intent);
                                     }
                                 });
@@ -145,16 +179,28 @@ public class RequestFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (sender != null) {
+            currentState("offline");
+        }
+    }
+
     private void cancelRequset() {
         chatRef.child(sender).child(receiver).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if(task.isSuccessful()){
+                if (task.isSuccessful()) {
                     chatRef.child(receiver).child(sender).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful()){
-                                Toast.makeText(getActivity(), "Request Cancelled", Toast.LENGTH_SHORT).show();
+                            if (task.isSuccessful()) {
+                                if (!isAccept)
+                                    Toast.makeText(getActivity(), "Request Cancelled", Toast.LENGTH_SHORT).show();
+                                else {
+                                    Log.d(TAG, "onComplete: Request Accepted");
+                                }
                             }
                         }
                     });
@@ -163,31 +209,33 @@ public class RequestFragment extends Fragment {
         });
     }
 
-    public static class reqViewHolder extends RecyclerView.ViewHolder {
-        private CircleImageView image;
-        private TextView name,status;
-        private Button btnAccept,btnReject;
-        public reqViewHolder(@NonNull View itemView) {
-            super(itemView);
-            image=itemView.findViewById(R.id.Image);
-            name=itemView.findViewById(R.id.Name);
-            status=itemView.findViewById(R.id.Status);
-            btnAccept=itemView.findViewById(R.id.btnAccept);
-            btnReject=itemView.findViewById(R.id.btnReject);
+    private void initViews(View view) {
+        reqRecyView = view.findViewById(R.id.requestRecyView);
+        try {
+            sender = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        rootRef = FirebaseDatabase.getInstance().getReference();
+        reqRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        chatRef = rootRef.child("ChatRequest");
+        contactRef = rootRef.child("Contact");
+        userRef = rootRef.child("User");
+
     }
 
-    private void initViews(View view) {
-            reqRecyView=view.findViewById(R.id.requestRecyView);
-            try {
-                sender= FirebaseAuth.getInstance().getCurrentUser().getUid();
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+    public static class reqViewHolder extends RecyclerView.ViewHolder {
+        private CircleImageView image;
+        private TextView name, status;
+        private Button btnAccept, btnReject;
 
-            reqRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            chatRef= FirebaseDatabase.getInstance().getReference().child("ChatRequest");
-            contactRef=FirebaseDatabase.getInstance().getReference().child("Contact");
-            userRef=FirebaseDatabase.getInstance().getReference().child("User");
+        public reqViewHolder(@NonNull View itemView) {
+            super(itemView);
+            image = itemView.findViewById(R.id.Image);
+            name = itemView.findViewById(R.id.Name);
+            status = itemView.findViewById(R.id.Status);
+            btnAccept = itemView.findViewById(R.id.btnAccept);
+            btnReject = itemView.findViewById(R.id.btnReject);
+        }
     }
 }

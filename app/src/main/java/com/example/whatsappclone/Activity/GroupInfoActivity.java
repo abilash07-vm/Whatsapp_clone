@@ -1,32 +1,37 @@
 package com.example.whatsappclone.Activity;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
-import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.Contact;
-import com.example.whatsappclone.Model.Dummy;
+import com.example.whatsappclone.Model.GroupChatModel;
 import com.example.whatsappclone.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -39,26 +44,25 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.whatsappclone.MainActivity.currentState;
 import static com.example.whatsappclone.settings.SettingsActivity.GALLERY_REQUEST_CODE;
+import static com.example.whatsappclone.settings.SettingsActivity.SETTINGS_REQUEST_CODE;
+import static com.example.whatsappclone.settings.SettingsActivity.STORAGE_PERMISSION_CODE;
 
 public class GroupInfoActivity extends AppCompatActivity {
+    public static final String grpName_key = "key";
     private static final String TAG = "GroupInfoActivity";
     private CircleImageView grpIcon;
     private TextView grpName;
     private Button btnAddMember;
-    private RecyclerView memberRecyView,contactRecyView;
-    private DatabaseReference grpRef,grpmemberRef, userGrpRef,contactRef,userRef;
+    private RecyclerView memberRecyView, contactRecyView;
+    private DatabaseReference grpRef, grpmemberRef, userGrpRef, contactRef, userRef;
     private StorageReference fileImgref;
-    private String key,userid;
-    public static final String grpName_key="key";
+    private String key, userid;
     private MaterialCardView AddMemberCardView;
+    private RelativeLayout parent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,24 +70,20 @@ public class GroupInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_group_info);
 
 
-
-        Intent intent=getIntent();
-        if(intent!=null){
-            key=intent.getStringExtra(grpName_key);
+        Intent intent = getIntent();
+        if (intent != null) {
+            key = intent.getStringExtra(grpName_key);
             initViews();
             grpIcon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent();
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    startActivityForResult(intent,GALLERY_REQUEST_CODE);
+                    openGallery();
                 }
             });
             grpmemberRef.child(userid).child("type").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if(snapshot.exists()) {
+                    if (snapshot.exists()) {
                         if (snapshot.getValue().toString().equals("admin")) {
                             btnAddMember.setVisibility(View.VISIBLE);
                         } else {
@@ -107,15 +107,104 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     }
 
+    public void openGallery() {
+        if (ActivityCompat.checkSelfPermission(GroupInfoActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(GroupInfoActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, GALLERY_REQUEST_CODE);
+        } else {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(GroupInfoActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) || ActivityCompat.shouldShowRequestPermissionRationale(GroupInfoActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Snackbar.make(parent, "Storage Permission is Required for this feature", Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Grant", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                intent.setData(Uri.parse("package:" + getPackageName()));
+                                startActivityForResult(intent, SETTINGS_REQUEST_CODE);
+                            }
+                        });
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case GALLERY_REQUEST_CODE:
+                if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+                    Uri imgUri = data.getData();
+                    CropImage.activity()
+                            .setGuidelines(CropImageView.Guidelines.ON)
+                            .setAspectRatio(1, 1)
+                            .start(this);
+
+                }
+                if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                    CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                    if (resultCode == RESULT_OK) {
+                        final StorageReference filePath = fileImgref.child(grpName + ".jpg");
+                        filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    filePath.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Uri> task) {
+                                            grpRef.child("image").setValue(task.getResult().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Toast.makeText(GroupInfoActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
+                                                    } else {
+                                                        Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                } else {
+                                    Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }
+                }
+                break;
+            case SETTINGS_REQUEST_CODE:
+                openGallery();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case STORAGE_PERMISSION_CODE:
+                openGallery();
+                break;
+            default:
+                break;
+
+        }
+    }
+
     private void getAllContact() {
-        FirebaseRecyclerOptions<Contact> options=new FirebaseRecyclerOptions.Builder<Contact>()
-                .setQuery(contactRef,Contact.class)
+        FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
+                .setQuery(contactRef, Contact.class)
                 .build();
-        FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder> adapter=new FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder>(options) {
+        FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final ContactActivity.contactViewHolder holder, int position, @NonNull final Contact model) {
-                final String key=getRef(position).getKey();
-                Log.d(TAG, "onBindViewHolder: "+key);
+                final String key = getRef(position).getKey();
+                Log.d(TAG, "onBindViewHolder: " + key);
                 try {
                     userRef.child(key).addValueEventListener(new ValueEventListener() {
                         @Override
@@ -134,7 +223,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 grpmemberRef.child(key).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        if(snapshot.hasChild("type")){
+                                        if (snapshot.hasChild("type")) {
                                             holder.itemView.setVisibility(View.GONE);
                                         }
                                     }
@@ -173,7 +262,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
                         }
                     });
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -181,7 +270,7 @@ public class GroupInfoActivity extends AppCompatActivity {
             @NonNull
             @Override
             public ContactActivity.contactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model,parent,false);
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model, parent, false);
                 return new ContactActivity.contactViewHolder(view);
             }
         };
@@ -192,62 +281,18 @@ public class GroupInfoActivity extends AppCompatActivity {
         AddMemberCardView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    protected void onActivityResult(final int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==GALLERY_REQUEST_CODE && resultCode==RESULT_OK && data!=null){
-            Uri imgUri=data.getData();
-            CropImage.activity()
-                    .setGuidelines(CropImageView.Guidelines.ON)
-                    .setAspectRatio(1,1)
-                    .start(this);
-
-        }
-        if(requestCode==CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE){
-            CropImage.ActivityResult result=CropImage.getActivityResult(data);
-            if(resultCode==RESULT_OK){
-                final StorageReference filePath=fileImgref.child(grpName+".jpg");
-                filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        if(task.isSuccessful()){
-                            filePath.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Uri> task) {
-                                    grpRef.child("image").setValue(task.getResult().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if(task.isSuccessful()){
-                                                Toast.makeText(GroupInfoActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
-                                            }
-                                            else{
-                                                Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-
-                        }else{
-                            Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-            }
-        }
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if(key!=null){
+        if (key != null) {
             currentState("online");
             grpName.setText(key);
             grpRef.child("image").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if(snapshot.exists()){
-                        Glide.with(GroupInfoActivity.this)
+                    if (snapshot.exists()) {
+                        Glide.with(getApplicationContext())
                                 .asBitmap()
                                 .load(snapshot.getValue())
                                 .into(grpIcon);
@@ -259,25 +304,25 @@ public class GroupInfoActivity extends AppCompatActivity {
 
                 }
             });
-            FirebaseRecyclerOptions<Dummy> options=new FirebaseRecyclerOptions.Builder<Dummy>()
-                    .setQuery(grpmemberRef,Dummy.class)
+            FirebaseRecyclerOptions<GroupChatModel> options = new FirebaseRecyclerOptions.Builder<GroupChatModel>()
+                    .setQuery(grpmemberRef, GroupChatModel.class)
                     .build();
-            FirebaseRecyclerAdapter<Dummy,MemberViewHolder> adapter=new FirebaseRecyclerAdapter<Dummy, MemberViewHolder>(options) {
+            FirebaseRecyclerAdapter<GroupChatModel, MemberViewHolder> adapter = new FirebaseRecyclerAdapter<GroupChatModel, MemberViewHolder>(options) {
                 @Override
-                protected void onBindViewHolder(@NonNull final MemberViewHolder holder, int position, @NonNull final Dummy model) {
-                    Log.d(TAG, "onBindViewHolder: "+getRef(position).getKey());
+                protected void onBindViewHolder(@NonNull final MemberViewHolder holder, int position, @NonNull final GroupChatModel model) {
+                    Log.d(TAG, "onBindViewHolder: " + getRef(position).getKey());
                     try {
                         userRef.child(getRef(position).getKey()).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                try{
+                                try {
                                     if (snapshot.exists()) {
                                         if (snapshot.hasChild("name"))
                                             holder.userName.setText(snapshot.child("name").getValue().toString());
                                         if (snapshot.hasChild("status"))
                                             holder.userStatus.setText(snapshot.child("status").getValue().toString());
-                                        if (snapshot.child("image").getValue()!=null ) {
-                                            Glide.with(GroupInfoActivity.this)
+                                        if (snapshot.child("image").getValue() != null) {
+                                            Glide.with(getApplicationContext())
                                                     .asBitmap()
                                                     .load(snapshot.child("image").getValue().toString())
                                                     .into(holder.userImg);
@@ -288,7 +333,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                                             holder.isadmin.setVisibility(View.GONE);
                                         }
                                     }
-                                }catch (Exception e){
+                                } catch (Exception e) {
                                     e.printStackTrace();
                                 }
 
@@ -299,7 +344,7 @@ public class GroupInfoActivity extends AppCompatActivity {
 
                             }
                         });
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -307,8 +352,8 @@ public class GroupInfoActivity extends AppCompatActivity {
                 @NonNull
                 @Override
                 public MemberViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                    View view= LayoutInflater.from(GroupInfoActivity.this)
-                            .inflate(R.layout.friends_model,parent,false);
+                    View view = LayoutInflater.from(GroupInfoActivity.this)
+                            .inflate(R.layout.friends_model, parent, false);
                     return new MemberViewHolder(view);
                 }
             };
@@ -317,68 +362,52 @@ public class GroupInfoActivity extends AppCompatActivity {
             adapter.startListening();
         }
     }
-    public static class MemberViewHolder extends RecyclerView.ViewHolder {
-        private CircleImageView userImg;
-        private TextView userName,userStatus,isadmin;
-        public MemberViewHolder(@NonNull View itemView) {
-            super(itemView);
-            userImg=itemView.findViewById(R.id.Image);
-            userName=itemView.findViewById(R.id.Name);
-            userStatus=itemView.findViewById(R.id.Status);
-            isadmin=itemView.findViewById(R.id.Admin);
-        }
-    }
 
     private void initViews() {
-        grpIcon=findViewById(R.id.grpImg);
-        grpName=findViewById(R.id.grpName);
-        btnAddMember=findViewById(R.id.btnAddMember);
-        memberRecyView=findViewById(R.id.memberRecyView);
-        grpRef= FirebaseDatabase.getInstance().getReference().child("Groups").child(key);
-        userRef=FirebaseDatabase.getInstance().getReference().child("User");
-        userGrpRef =FirebaseDatabase.getInstance().getReference().child("UserGroup");
-        contactRef=FirebaseDatabase.getInstance().getReference().child("Contact");
-        contactRecyView=findViewById(R.id.addContactRecyView);
-        grpmemberRef=grpRef.child("Members");
-        userid=FirebaseAuth.getInstance().getCurrentUser().getUid();
-        AddMemberCardView=findViewById(R.id.secondCardView);
-        fileImgref= FirebaseStorage.getInstance().getReference().child("Profile Image");
+        parent = findViewById(R.id.parent);
+        grpIcon = findViewById(R.id.grpImg);
+        grpName = findViewById(R.id.grpName);
+        btnAddMember = findViewById(R.id.btnAddMember);
+        memberRecyView = findViewById(R.id.memberRecyView);
+        grpRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(key);
+        userRef = FirebaseDatabase.getInstance().getReference().child("User");
+        userGrpRef = FirebaseDatabase.getInstance().getReference().child("UserGroup");
+        contactRef = FirebaseDatabase.getInstance().getReference().child("Contact");
+        contactRecyView = findViewById(R.id.addContactRecyView);
+        grpmemberRef = grpRef.child("Members");
+        userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        AddMemberCardView = findViewById(R.id.secondCardView);
+        fileImgref = FirebaseStorage.getInstance().getReference().child("Profile Image");
     }
+
     @Override
     protected void onPause() {
         super.onPause();
-        if(userid!=null){
+        if (userid != null) {
             currentState("offline");
         }
     }
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Glide.with(getApplicationContext()).pauseRequests();
-        if(userid!=null) {
+        if (userid != null) {
             currentState("offline");
         }
     }
-    public void currentState(String state){
-        Calendar calendar=Calendar.getInstance();
-        String currentDate,currentTime;
-        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
-        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
-        currentDate=sdfDate.format(calendar.getTime());
-        currentTime=sdfTime.format(calendar.getTime());
-        Map<String,Object> stateMap=new HashMap<>();
-        stateMap.put("date",currentDate);
-        stateMap.put("time",currentTime);
-        stateMap.put("state",state);
-        userRef.child(userid).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if(task.isComplete()){
-                    Log.d(TAG, "onComplete: welcome back");
-                }
-            }
-        });
+
+
+    public static class MemberViewHolder extends RecyclerView.ViewHolder {
+        private CircleImageView userImg;
+        private TextView userName, userStatus, isadmin;
+
+        public MemberViewHolder(@NonNull View itemView) {
+            super(itemView);
+            userImg = itemView.findViewById(R.id.Image);
+            userName = itemView.findViewById(R.id.Name);
+            userStatus = itemView.findViewById(R.id.Status);
+            isadmin = itemView.findViewById(R.id.Admin);
+        }
     }
 }

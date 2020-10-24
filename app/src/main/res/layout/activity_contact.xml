@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activity.ContactActivity">
+
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:id="@+id/toolbar">
+        android:background="@color/colorPrimary">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="start">
+
             <ImageView
+                android:id="@+id/btnBack"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_back"
-                android:id="@+id/btnBack"/>
+                android:src="@drawable/ic_back" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:text="Your Friends"
+                android:textColor="#fff"
+                android:textSize="25sp"
+                android:textStyle="bold" />
         </RelativeLayout>
 
     </com.google.android.material.appbar.MaterialToolbar>
+
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/contactRecyView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar"
-        android:id="@+id/contactRecyView"/>
+        android:layout_below="@+id/toolbar" />
 
 </RelativeLayout>

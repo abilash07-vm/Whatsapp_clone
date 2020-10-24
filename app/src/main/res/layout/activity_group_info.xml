@@ -1,105 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activity.GroupInfoActivity">
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/grpImg"
                 android:layout_width="200dp"
                 android:layout_height="250dp"
-                android:src="@drawable/profile_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="50dp"
-                android:id="@+id/grpImg"/>
+                android:src="@drawable/profile_image" />
+
             <TextView
+                android:id="@+id/grpName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="group Name"
-                android:textSize="25sp"
-                android:textStyle="bold"
-                android:textColor="#000"
                 android:layout_below="@+id/grpImg"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="20dp"
-                android:id="@+id/grpName"/>
+                android:text="group Name"
+                android:textColor="#000"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
             <Button
+                android:id="@+id/btnAddMember"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/grpName"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="20dp"
-                android:text="Add members"
-                android:id="@+id/btnAddMember"/>
+                android:text="Add members" />
+
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/secondCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_centerHorizontal="true"
                 android:layout_below="@+id/btnAddMember"
+                android:layout_centerHorizontal="true"
                 android:layout_margin="20dp"
-                android:visibility="gone"
-                android:id="@+id/secondCardView"
-                android:backgroundTint="#FAEEA6">
+                android:layout_marginLeft="10dp"
+                android:backgroundTint="#FAEEA6"
+                android:visibility="gone">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
 
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:text="Click A Contact To Add"
                         android:textColor="#000"
-                        android:textStyle="bold"
                         android:textSize="25sp"
-                        android:gravity="center"/>
+                        android:textStyle="bold" />
+
                     <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/addContactRecyView"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/addContactRecyView"/>
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
 
-
             </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/firstCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_centerHorizontal="true"
                 android:layout_below="@id/secondCardView"
+                android:layout_centerHorizontal="true"
                 android:layout_margin="20dp"
-                android:id="@+id/firstCardView"
+                android:layout_marginLeft="10dp"
                 android:backgroundTint="#FAEEA6">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center"
                         android:text="Members"
                         android:textColor="#000"
-                        android:textStyle="bold"
                         android:textSize="25sp"
-                        android:gravity="center"/>
+                        android:textStyle="bold" />
+
                     <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/memberRecyView"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/memberRecyView"/>
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
 
-
             </com.google.android.material.card.MaterialCardView>
-
 
 
         </RelativeLayout>

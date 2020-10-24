@@ -1,7 +1,7 @@
 package com.example.whatsappclone.Model;
 
 public class PrivateMessageModel {
-    private String from,message,type,to,date,time;
+    private String from, message, type, to, date, time;
     private long timestamp;
 
     public PrivateMessageModel(String from, String message, String type, String to, String date, String time, long timestamp) {

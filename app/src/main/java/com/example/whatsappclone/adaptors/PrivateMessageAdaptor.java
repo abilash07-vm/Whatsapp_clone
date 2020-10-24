@@ -9,11 +9,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Model.MessageModel;
 import com.example.whatsappclone.Model.PrivateMessageModel;
 import com.example.whatsappclone.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,10 +27,10 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAdaptor.ViewHolder> {
     private static final String TAG = "PrivateMessageAdaptor";
-    ArrayList<PrivateMessageModel> messages=new ArrayList<>();
+    ArrayList<PrivateMessageModel> messages = new ArrayList<>();
     Context context;
-    String currUser=FirebaseAuth.getInstance().getCurrentUser().getUid();
-    private DatabaseReference userRef= FirebaseDatabase.getInstance().getReference().child("User");
+    String currUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("User");
 
     public PrivateMessageAdaptor(Context context) {
         this.context = context;
@@ -46,15 +44,15 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.message_private_model,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_private_model, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        final PrivateMessageModel message=messages.get(position);
-        Log.d(TAG, "onBindViewHolder: "+message.getFrom());
-        if(!message.getFrom().equals(currUser)){
+        final PrivateMessageModel message = messages.get(position);
+        Log.d(TAG, "onBindViewHolder: " + message.getFrom());
+        if (!message.getFrom().equals(currUser)) {
             holder.receiverImg.setVisibility(View.VISIBLE);
             holder.receivermsg.setVisibility(View.VISIBLE);
             holder.sendermsg.setVisibility(View.GONE);
@@ -64,12 +62,12 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                    if(snapshot.hasChild("image")){
-                        Glide.with(context)
+                    if (snapshot.hasChild("image")) {
+                        Glide.with(context.getApplicationContext())
                                 .asBitmap()
                                 .load(snapshot.child("image").getValue())
                                 .into(holder.receiverImg);
-                        Log.d(TAG, "onDataChange: "+snapshot.child("image"));
+                        Log.d(TAG, "onDataChange: " + snapshot.child("image"));
                     }
                 }
 
@@ -78,7 +76,7 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
 
                 }
             });
-        }else{
+        } else {
             holder.sendermsg.setVisibility(View.VISIBLE);
             holder.receiverImg.setVisibility(View.GONE);
             holder.receivermsg.setVisibility(View.GONE);
@@ -93,13 +91,14 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView receivermsg,sendermsg;
+        private TextView receivermsg, sendermsg;
         private CircleImageView receiverImg;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            receivermsg=itemView.findViewById(R.id.receiver_msg);
-            sendermsg=itemView.findViewById(R.id.sender_msg);
-            receiverImg=itemView.findViewById(R.id.receiver_img);
+            receivermsg = itemView.findViewById(R.id.receiver_msg);
+            sendermsg = itemView.findViewById(R.id.sender_msg);
+            receiverImg = itemView.findViewById(R.id.receiver_img);
         }
     }
 }

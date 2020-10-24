@@ -1,31 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="10dp"
-    app:cardElevation="5dp"
-    app:cardCornerRadius="10dp"
     app:cardBackgroundColor="#050505"
-    android:id="@+id/cardview">
+    app:cardCornerRadius="10dp"
+    app:cardElevation="5dp">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
         <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/groupicon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/default_profile"
-            android:id="@+id/groupicon"/>
+            android:src="@drawable/default_profile" />
+
         <TextView
+            android:id="@+id/groupName"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
             android:text="Group Name"
             android:textColor="#FAF1F1"
-            android:textSize="25sp"
-            android:layout_marginLeft="20dp"
-            android:id="@+id/groupName"/>
+            android:textSize="25sp" />
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/circledrawble"
+            android:gravity="center"
+            android:text="count"
+            android:textColor="#000"
+            android:textSize="20sp"
+            android:visibility="gone" />
+
+    </RelativeLayout>
 
 </com.google.android.material.card.MaterialCardView>

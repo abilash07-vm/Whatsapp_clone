@@ -17,7 +17,7 @@ import com.example.whatsappclone.fragments.RequestFragment;
 public class Adapter extends FragmentPagerAdapter {
 
     @StringRes
-    private static final int[] TAB_TITLES = new int[]{R.string.tab_1, R.string.tab_2,R.string.tab_3};
+    private static final int[] TAB_TITLES = new int[]{R.string.tab_1, R.string.tab_2, R.string.tab_3};
     private final Context mContext;
 
     public Adapter(Context context, FragmentManager fm) {
@@ -29,7 +29,7 @@ public class Adapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
-        switch (position){
+        switch (position) {
             case 0:
                 return new ChatsFragment();
             case 1:

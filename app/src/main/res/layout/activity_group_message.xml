@@ -6,70 +6,77 @@
     android:layout_height="match_parent"
     android:background="#B5B2B2"
     tools:context=".Activity.GroupMessageActivity">
+
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/toolbar"
         android:background="@color/colorPrimary">
+
         <ImageView
+            android:id="@+id/btnBack"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/ic_back"
             android:layout_marginRight="10dp"
-            android:id="@+id/btnBack"/>
+            android:src="@drawable/ic_back" />
+
         <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/Image"
             android:layout_width="70dp"
             android:layout_height="70dp"
-            android:src="@drawable/profile_image"
             android:layout_marginStart="10dp"
-            android:layout_marginBottom="10dp"
             android:layout_marginEnd="10dp"
-            android:id="@+id/Image"/>
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/profile_image" />
 
         <TextView
+            android:id="@+id/grpName"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_marginLeft="20dp"
             android:text="Group Name"
             android:textColor="#fff"
-            android:textStyle="bold"
             android:textSize="20sp"
-            android:id="@+id/grpName"
-            android:layout_marginLeft="20dp"/>
+            android:textStyle="bold" />
     </com.google.android.material.appbar.MaterialToolbar>
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@+id/toolbar"
-            android:layout_above="@+id/cardview"
-            android:id="@+id/messageRecyView"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/messageRecyView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/cardview"
+        android:layout_below="@+id/toolbar" />
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         app:cardCornerRadius="30dp"
-        app:cardElevation="10dp"
-        android:id="@+id/cardview"
-        android:layout_alignParentBottom="true">
+        app:cardElevation="10dp">
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+
             <EditText
+                android:id="@+id/txtMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="50dp"
-                android:hint="Enter Message here"
-                android:gravity="center"
-                android:id="@+id/txtMessage"
                 android:background="#FFFFFF"
-                android:textSize="20sp"/>
+                android:gravity="center"
+                android:hint="Enter Message here"
+                android:minHeight="50dp"
+                android:textSize="20sp" />
+
             <ImageView
+                android:id="@+id/btnSend"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@drawable/send_message"
                 android:layout_alignParentEnd="true"
                 android:background="#fff"
-                android:id="@+id/btnSend"
-                android:visibility="gone"/>
+                android:src="@drawable/send_message"
+                android:visibility="gone" />
         </RelativeLayout>
 
 

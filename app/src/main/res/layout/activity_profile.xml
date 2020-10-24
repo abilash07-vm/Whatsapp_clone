@@ -1,57 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activity.ProfileActivity">
+
     <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profile_Image"
         android:layout_width="250dp"
         android:layout_height="200dp"
-        android:src="@drawable/profile_image"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
-        android:id="@+id/profile_Image"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:layout_below="@+id/profile_Image"
-        android:textSize="25sp"
-        android:id="@+id/profile_Name"
-        android:layout_centerHorizontal="true"
-        android:textStyle="bold"
-        android:layout_marginTop="50dp"/>
+        android:src="@drawable/profile_image" />
 
     <TextView
+        android:id="@+id/profile_Name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Status"
-        android:textStyle="italic"
-        android:layout_below="@+id/profile_Name"
-        android:textSize="25sp"
+        android:layout_below="@+id/profile_Image"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:text="Name"
+        android:textSize="25sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/profile_Status"
-        android:layout_marginTop="50dp"/>
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/profile_Name"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:text="Status"
+        android:textSize="25sp"
+        android:textStyle="italic" />
 
     <Button
+        android:id="@+id/btnRequest"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/profile_Status"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="40dp"
         android:gravity="center"
-        android:text="Request"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/btnRequest"/>
+        android:text="Request" />
+
     <Button
+        android:id="@+id/btnCancel"
         android:layout_width="200dp"
         android:layout_height="50dp"
         android:layout_below="@+id/btnRequest"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:text="Reject"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/btnCancel"/>
+        android:text="Reject" />
 
 
 </RelativeLayout>

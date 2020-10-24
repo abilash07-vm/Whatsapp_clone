@@ -13,7 +13,8 @@
         android:roundIcon="@drawable/whatsappicon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.PrivateMesaageActivity"></activity>
+        <activity android:name=".settings.BrowserActivity" />
+        <activity android:name=".Activity.PrivateMesaageActivity" />
         <activity android:name=".Activity.GroupInfoActivity" />
         <activity android:name=".Activity.ContactActivity" />
         <activity android:name=".Activity.ProfileActivity" />
@@ -36,8 +37,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service android:name=".MyFireBaseMessingService" />
     </application>
 
 </manifest>

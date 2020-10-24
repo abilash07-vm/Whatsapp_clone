@@ -1,10 +1,5 @@
 package com.example.whatsappclone.Activity;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,13 +8,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.R;
-import com.example.whatsappclone.settings.FindFriendsActivity;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -44,7 +42,7 @@ public class ContactActivity extends AppCompatActivity {
     private MaterialToolbar toolbar;
     private RecyclerView contactRecView;
     private ImageView btnBack;
-    private DatabaseReference contactRef,userRef;
+    private DatabaseReference contactRef, userRef;
     private FirebaseAuth auth;
     private String currentUser;
 
@@ -59,8 +57,8 @@ public class ContactActivity extends AppCompatActivity {
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(ContactActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                Intent intent = new Intent(ContactActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });
@@ -71,35 +69,35 @@ public class ContactActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         currentState("online");
-        FirebaseRecyclerOptions<Contact> options=new FirebaseRecyclerOptions.Builder<Contact>()
-                .setQuery(contactRef,Contact.class)
+        FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
+                .setQuery(contactRef, Contact.class)
                 .build();
-        FirebaseRecyclerAdapter<Contact,contactViewHolder> adapter=new FirebaseRecyclerAdapter<Contact, contactViewHolder>(options) {
+        FirebaseRecyclerAdapter<Contact, contactViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, contactViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final contactViewHolder holder, int position, @NonNull final Contact model) {
-                final String key=getRef(position).getKey();
-                Log.d(TAG, "onBindViewHolder: "+key);
+                final String key = getRef(position).getKey();
+                Log.d(TAG, "onBindViewHolder: " + key);
                 userRef.child(key).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if(snapshot.exists()) {
+                        if (snapshot.exists()) {
                             holder.name.setText(snapshot.child("name").getValue().toString());
                             holder.status.setText(snapshot.child("status").getValue().toString());
                             holder.itemView.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    Intent intent=new Intent(ContactActivity.this,ProfileActivity.class);
-                                    intent.putExtra(profile_key,key);
+                                    Intent intent = new Intent(ContactActivity.this, ProfileActivity.class);
+                                    intent.putExtra(profile_key, key);
                                     startActivity(intent);
                                 }
                             });
-                            if(snapshot.child("state").exists() && snapshot.child("state").getValue().toString().equals("online")){
+                            if (snapshot.child("state").exists() && snapshot.child("state").getValue().toString().equals("online")) {
                                 holder.online.setVisibility(View.VISIBLE);
-                            }else {
+                            } else {
                                 holder.online.setVisibility(View.GONE);
                             }
-                            if(snapshot.hasChild("image")) {
-                                Glide.with(ContactActivity.this)
+                            if (snapshot.hasChild("image")) {
+                                Glide.with(getApplicationContext())
                                         .asBitmap()
                                         .placeholder(R.drawable.profile_image)
                                         .load(snapshot.child("image").getValue().toString())
@@ -118,7 +116,7 @@ public class ContactActivity extends AppCompatActivity {
             @NonNull
             @Override
             public contactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model,parent,false);
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model, parent, false);
                 return new contactViewHolder(view);
             }
         };
@@ -127,32 +125,22 @@ public class ContactActivity extends AppCompatActivity {
         adapter.startListening();
 
     }
-    public static class contactViewHolder extends RecyclerView.ViewHolder {
-        public TextView name,status;
-        public ImageView image,online;
-        public contactViewHolder(@NonNull View itemView) {
-            super(itemView);
-            name=itemView.findViewById(R.id.Name);
-            status=itemView.findViewById(R.id.Status);
-            image=itemView.findViewById(R.id.Image);
-            online=itemView.findViewById(R.id.online);
-        }
-    }
 
     private void initViews() {
-        toolbar=findViewById(R.id.toolbar);
-        contactRecView=findViewById(R.id.contactRecyView);
-        btnBack=findViewById(R.id.btnBack);
+        toolbar = findViewById(R.id.toolbar);
+        contactRecView = findViewById(R.id.contactRecyView);
+        btnBack = findViewById(R.id.btnBack);
 
-        userRef=FirebaseDatabase.getInstance().getReference().child("User");
-        auth=FirebaseAuth.getInstance();
-        currentUser=auth.getCurrentUser().getUid();
-        contactRef= FirebaseDatabase.getInstance().getReference().child("Contact").child(currentUser);
+        userRef = FirebaseDatabase.getInstance().getReference().child("User");
+        auth = FirebaseAuth.getInstance();
+        currentUser = auth.getCurrentUser().getUid();
+        contactRef = FirebaseDatabase.getInstance().getReference().child("Contact").child(currentUser);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
-        if(currentUser!=null){
+        if (currentUser != null) {
             currentState("offline");
         }
     }
@@ -160,29 +148,43 @@ public class ContactActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(currentUser!=null) {
+        if (currentUser != null) {
             currentState("offline");
         }
     }
-    public void currentState(String state){
-        Calendar calendar=Calendar.getInstance();
-        String currentDate,currentTime;
-        SimpleDateFormat sdfDate=new SimpleDateFormat("MMM dd yyyy");
-        SimpleDateFormat sdfTime=new SimpleDateFormat("hh:mm a");
-        currentDate=sdfDate.format(calendar.getTime());
-        currentTime=sdfTime.format(calendar.getTime());
-        Map<String,Object> stateMap=new HashMap<>();
-        stateMap.put("date",currentDate);
-        stateMap.put("time",currentTime);
-        stateMap.put("state",state);
+
+    public void currentState(String state) {
+        Calendar calendar = Calendar.getInstance();
+        String currentDate, currentTime;
+        SimpleDateFormat sdfDate = new SimpleDateFormat("MMM dd yyyy");
+        SimpleDateFormat sdfTime = new SimpleDateFormat("hh:mm a");
+        currentDate = sdfDate.format(calendar.getTime());
+        currentTime = sdfTime.format(calendar.getTime());
+        Map<String, Object> stateMap = new HashMap<>();
+        stateMap.put("date", currentDate);
+        stateMap.put("time", currentTime);
+        stateMap.put("state", state);
         userRef.child(currentUser).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if(task.isComplete()){
+                if (task.isComplete()) {
                     Log.d(TAG, "onComplete: welcome back");
                 }
             }
         });
+    }
+
+    public static class contactViewHolder extends RecyclerView.ViewHolder {
+        public TextView name, status;
+        public ImageView image, online;
+
+        public contactViewHolder(@NonNull View itemView) {
+            super(itemView);
+            name = itemView.findViewById(R.id.Name);
+            status = itemView.findViewById(R.id.Status);
+            image = itemView.findViewById(R.id.Image);
+            online = itemView.findViewById(R.id.online);
+        }
     }
 
 }

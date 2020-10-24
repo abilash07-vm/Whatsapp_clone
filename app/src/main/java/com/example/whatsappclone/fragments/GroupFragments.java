@@ -1,12 +1,9 @@
 package com.example.whatsappclone.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,15 +11,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Activity.GroupInfoActivity;
-import com.example.whatsappclone.Activity.GroupMessageActivity;
-import com.example.whatsappclone.Model.Dummy;
+import com.example.whatsappclone.Model.GroupChatModel;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.adaptors.GroupAdaptor;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -35,18 +26,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
+import static com.example.whatsappclone.MainActivity.currentState;
 
 public class GroupFragments extends Fragment {
     private RecyclerView grpRecyView;
-    private DatabaseReference grpByUserRef,grpRef;
+    private DatabaseReference grpByUserRef, grpRef;
     private FirebaseUser currUsers;
-    private ArrayList<Dummy> groups;
+    private ArrayList<GroupChatModel> groups;
     private GroupAdaptor adaptor;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view=getActivity().getLayoutInflater().inflate(R.layout.group_fragment,container,false);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.group_fragment, container, false);
 
         initViews(view);
 
@@ -56,18 +48,28 @@ public class GroupFragments extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(currUsers!=null)
-        getAllGroupNames();
+        if (currUsers != null) {
+            getAllGroupNames();
+            currentState("online");
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (currUsers != null) {
+            currentState("offline");
+        }
     }
 
     private void initViews(View view) {
-        grpRecyView=view.findViewById(R.id.recyView);
-        groups=new ArrayList<>();
-        currUsers=FirebaseAuth.getInstance().getCurrentUser();
-        if(currUsers!=null)
-        grpByUserRef = FirebaseDatabase.getInstance().getReference().child("UserGroup").child(currUsers.getUid());
-        grpRef=FirebaseDatabase.getInstance().getReference().child("Groups");
-        adaptor=new GroupAdaptor(getContext());
+        grpRecyView = view.findViewById(R.id.recyView);
+        groups = new ArrayList<>();
+        currUsers = FirebaseAuth.getInstance().getCurrentUser();
+        if (currUsers != null)
+            grpByUserRef = FirebaseDatabase.getInstance().getReference().child("UserGroup").child(currUsers.getUid());
+        grpRef = FirebaseDatabase.getInstance().getReference().child("Groups");
+        adaptor = new GroupAdaptor(getContext());
         grpRecyView.setLayoutManager(new LinearLayoutManager(getContext()));
         grpRecyView.setAdapter(adaptor);
     }
@@ -77,13 +79,13 @@ public class GroupFragments extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 groups.clear();
-                for(DataSnapshot snap:snapshot.getChildren()){
-                    Dummy group=snap.getValue(Dummy.class);
+                for (DataSnapshot snap : snapshot.getChildren()) {
+                    GroupChatModel group = snap.getValue(GroupChatModel.class);
                     groups.add(group);
-                    Collections.sort(groups, new Comparator<Dummy>() {
+                    Collections.sort(groups, new Comparator<GroupChatModel>() {
                         @Override
-                        public int compare(Dummy o1, Dummy o2) {
-                            return o1.getTimestamp()<o2.getTimestamp() ? 1 :-1;
+                        public int compare(GroupChatModel o1, GroupChatModel o2) {
+                            return o1.getTimestamp() < o2.getTimestamp() ? 1 : -1;
                         }
                     });
                     adaptor.setGroups(groups);
@@ -96,16 +98,5 @@ public class GroupFragments extends Fragment {
 
             }
         });
-    }
-    public static class grpViewHolder extends RecyclerView.ViewHolder {
-        private ImageView grpIcon;
-        private TextView grpName;
-        private MaterialCardView cardView;
-        public grpViewHolder(@NonNull View itemView) {
-            super(itemView);
-            grpIcon=itemView.findViewById(R.id.groupicon);
-            grpName=itemView.findViewById(R.id.groupName);
-            cardView=itemView.findViewById(R.id.cardview);
-        }
     }
 }

@@ -1,13 +1,11 @@
 package com.example.whatsappclone.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,15 +13,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Activity.ContactActivity;
-import com.example.whatsappclone.Activity.PrivateMesaageActivity;
-import com.example.whatsappclone.Model.Contact;
-import com.example.whatsappclone.Model.Dummy;
-import com.example.whatsappclone.Model.PrivateMessageModel;
+import com.example.whatsappclone.Model.ChatsModel;
 import com.example.whatsappclone.R;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.example.whatsappclone.adaptors.ChatsAdaptor;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -36,43 +28,48 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.example.whatsappclone.Activity.PrivateMesaageActivity.message_key;
+import static com.example.whatsappclone.MainActivity.currentState;
 
 public class ChatsFragment extends Fragment {
+    private static final String TAG = "ChatsFragment";
     private MaterialToolbar toolbar;
     private View view;
     private RecyclerView chatsRecyView;
     private ImageView btnBack;
-    private DatabaseReference contactRef,userRef,userStateRef;
-    private ArrayList<PrivateMessageModel>
+    private DatabaseReference contactRef, userRef, userStateRef;
+    private ArrayList<ChatsModel> chats;
     private FirebaseAuth auth;
+    private ChatsAdaptor adaptor;
     private String currentUser;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view=getActivity().getLayoutInflater().inflate(R.layout.group_fragment,container,false);
+        view = getActivity().getLayoutInflater().inflate(R.layout.group_fragment, container, false);
         initViews();
         return view;
     }
+
     @Override
     public void onStart() {
         super.onStart();
-        if(currentUser!=null) {
+        if (currentUser != null) {
+            currentState("online");
             userStateRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    groups.clear();
-                    for(DataSnapshot snap:snapshot.getChildren()){
-                        Dummy group=snap.getValue(Dummy.class);
-                        groups.add(group);
-                        Collections.sort(groups, new Comparator<Dummy>() {
+                    chats.clear();
+                    for (DataSnapshot snap : snapshot.getChildren()) {
+                        ChatsModel chat = snap.getValue(ChatsModel.class);
+                        Log.d(TAG, "onDataChange: " + chat.toString());
+                        chats.add(chat);
+                        Collections.sort(chats, new Comparator<ChatsModel>() {
                             @Override
-                            public int compare(Dummy o1, Dummy o2) {
-                                return o1.getTimestamp()<o2.getTimestamp() ? 1 :-1;
+                            public int compare(ChatsModel o1, ChatsModel o2) {
+                                return o1.getTimestamp() < o2.getTimestamp() ? 1 : -1;
                             }
                         });
-                        adaptor.setGroups(groups);
-
+                        adaptor.setChats(chats);
                     }
                 }
 
@@ -81,69 +78,29 @@ public class ChatsFragment extends Fragment {
 
                 }
             });
-//            FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
-//                    .setQuery(contactRef, Contact.class)
-//                    .build();
-//            FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder>(options) {
-//                @Override
-//                protected void onBindViewHolder(@NonNull final ContactActivity.contactViewHolder holder, int position, @NonNull final Contact model) {
-//                    String key = getRef(position).getKey();
-//                    userRef.child(key).addValueEventListener(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(@NonNull final DataSnapshot snapshot) {
-//                            if (snapshot.exists()) {
-//                                holder.name.setText(snapshot.child("name").getValue().toString());
-//                                holder.status.setText(snapshot.child("status").getValue().toString());
-//                                if (snapshot.child("state").exists() && snapshot.child("state").getValue().toString().equals("online")) {
-//                                    holder.online.setVisibility(View.VISIBLE);
-//                                } else {
-//                                    holder.online.setVisibility(View.GONE);
-//                                }
-//                                if (snapshot.child("image").exists()) {
-//                                    Glide.with(getActivity())
-//                                            .asBitmap()
-//                                            .load(snapshot.child("image").getValue().toString())
-//                                            .into(holder.image);
-//                                }
-//                                holder.itemView.setOnClickListener(new View.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(View v) {
-//                                        Intent intent = new Intent(getContext(), PrivateMesaageActivity.class);
-//                                        intent.putExtra(message_key, snapshot.getKey());
-//                                        startActivity(intent);
-//                                    }
-//                                });
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(@NonNull DatabaseError error) {
-//
-//                        }
-//                    });
-//                }
-//
-//                @NonNull
-//                @Override
-//                public ContactActivity.contactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model, parent, false);
-//                    return new ContactActivity.contactViewHolder(view);
-//                }
-//            };
-//            chatsRecyView.setAdapter(adapter);
-//            chatsRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
-//            adapter.startListening();
         }
 
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (currentUser != null)
+            currentState("offline");
+    }
+
     private void initViews() {
-        chatsRecyView=view.findViewById(R.id.recyView);
-        userRef= FirebaseDatabase.getInstance().getReference().child("User");
-        auth= FirebaseAuth.getInstance();
-        if(auth.getCurrentUser()!=null) {
+        chatsRecyView = view.findViewById(R.id.recyView);
+        chatsRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        adaptor = new ChatsAdaptor(getActivity());
+        chatsRecyView.setAdapter(adaptor);
+        userRef = FirebaseDatabase.getInstance().getReference().child("User");
+        auth = FirebaseAuth.getInstance();
+        chats = new ArrayList<>();
+        if (auth.getCurrentUser() != null) {
             currentUser = auth.getCurrentUser().getUid();
             contactRef = FirebaseDatabase.getInstance().getReference().child("Contact").child(currentUser);
-            userStateRef=FirebaseDatabase.getInstance().getReference().child("MessageState").child(currentUser);
+            userStateRef = FirebaseDatabase.getInstance().getReference().child("MessageState").child(currentUser);
         }
     }
 }

@@ -1,8 +1,5 @@
 package com.example.whatsappclone.loginandsignup;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +11,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,11 +22,12 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class SignupActivity extends AppCompatActivity {
 
-    private EditText email,password,rePassword;
-    private TextView alreadyHaveAccount,notMatching,invalidemail;
+    private EditText email, password, rePassword;
+    private TextView alreadyHaveAccount, notMatching, invalidemail;
     private Button btnSignup;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference rootReference;
@@ -41,7 +42,7 @@ public class SignupActivity extends AppCompatActivity {
         alreadyHaveAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(SignupActivity.this, LoginActivity.class);
+                Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
@@ -61,9 +62,9 @@ public class SignupActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(!checkEmail(email.getText().toString())){
+                if (!checkEmail(email.getText().toString())) {
                     invalidemail.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     invalidemail.setVisibility(View.GONE);
                 }
             }
@@ -86,9 +87,9 @@ public class SignupActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if(!password.getText().toString().equals(rePassword.getText().toString())){
+                if (!password.getText().toString().equals(rePassword.getText().toString())) {
                     notMatching.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     notMatching.setVisibility(View.GONE);
                 }
             }
@@ -96,8 +97,8 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private boolean checkEmail(String email) {
-        if(email.contains("@") && email.contains(".")){
-            if(email.indexOf('@')< email.indexOf('.')){
+        if (email.contains("@") && email.contains(".")) {
+            if (email.indexOf('@') < email.indexOf('.')) {
                 return true;
             }
         }
@@ -105,33 +106,43 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void newsignup() {
-        String txtemail=email.getText().toString();
-        String txtpass=password.getText().toString();
-        String txtrepass=rePassword.getText().toString();
-        if(txtpass.length()<8) {
-            Toast.makeText(SignupActivity.this,"password is too short",Toast.LENGTH_SHORT).show();
-        }else if(txtpass.length()>25){
-            Toast.makeText(SignupActivity.this,"password is too long.",Toast.LENGTH_SHORT).show();
-        } else if(txtemail.equals("")|| txtrepass.equals("") || !txtpass.equals(txtrepass) || !checkEmail(txtemail) ){
-            Toast.makeText(SignupActivity.this,"Invalid details...",Toast.LENGTH_SHORT).show();
-        }else{
+        String txtemail = email.getText().toString();
+        String txtpass = password.getText().toString();
+        String txtrepass = rePassword.getText().toString();
+        if (txtpass.length() < 8) {
+            Toast.makeText(SignupActivity.this, "password is too short", Toast.LENGTH_SHORT).show();
+        } else if (txtpass.length() > 25) {
+            Toast.makeText(SignupActivity.this, "password is too long.", Toast.LENGTH_SHORT).show();
+        } else if (txtemail.equals("") || txtrepass.equals("") || !txtpass.equals(txtrepass) || !checkEmail(txtemail)) {
+            Toast.makeText(SignupActivity.this, "Invalid details...", Toast.LENGTH_SHORT).show();
+        } else {
             loadingBar.setTitle("Sign Up");
             loadingBar.setMessage("Creating account please wait...");
             loadingBar.setCanceledOnTouchOutside(true);
             loadingBar.create();
-            firebaseAuth.createUserWithEmailAndPassword(txtemail,txtpass)
+            firebaseAuth.createUserWithEmailAndPassword(txtemail, txtpass)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(task.isSuccessful()){
+                            if (task.isSuccessful()) {
                                 loadingBar.dismiss();
-                                String currentUserid=firebaseAuth.getCurrentUser().getUid();
+                                String currentUserid = firebaseAuth.getCurrentUser().getUid();
                                 rootReference.child("User").child(currentUserid).setValue("");
-                                Toast.makeText(SignupActivity.this,"Registered sucessfully...",Toast.LENGTH_SHORT).show();
-                                Intent intent=new Intent(SignupActivity.this, MainActivity.class);
-                                startActivity(intent);
-                            }else{
-                                Toast.makeText(SignupActivity.this,task.getException().toString(),Toast.LENGTH_LONG).show();
+                                String userId = firebaseAuth.getUid();
+                                String device_token = FirebaseInstanceId.getInstance().getToken();
+                                FirebaseDatabase.getInstance().getReference().child("User").child(userId).child("device_token").setValue(device_token).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(SignupActivity.this, "Registered sucessfully...", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    }
+                                });
+
+                            } else {
+                                Toast.makeText(SignupActivity.this, task.getException().toString(), Toast.LENGTH_LONG).show();
                             }
                         }
                     });
@@ -140,15 +151,15 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        email=findViewById(R.id.signupEmail);
-        password=findViewById(R.id.signupPassword);
-        rePassword=findViewById(R.id.signupRePassword);
-        alreadyHaveAccount=findViewById(R.id.alreadyHaveAccount);
-        btnSignup=findViewById(R.id.btnSignup);
-        notMatching=findViewById(R.id.notMatching);
-        invalidemail=findViewById(R.id.invalidemail);
-        firebaseAuth=FirebaseAuth.getInstance();
+        email = findViewById(R.id.signupEmail);
+        password = findViewById(R.id.signupPassword);
+        rePassword = findViewById(R.id.signupRePassword);
+        alreadyHaveAccount = findViewById(R.id.alreadyHaveAccount);
+        btnSignup = findViewById(R.id.btnSignup);
+        notMatching = findViewById(R.id.notMatching);
+        invalidemail = findViewById(R.id.invalidemail);
+        firebaseAuth = FirebaseAuth.getInstance();
         rootReference = FirebaseDatabase.getInstance().getReference();
-        loadingBar=new ProgressDialog(this);
+        loadingBar = new ProgressDialog(this);
     }
 }

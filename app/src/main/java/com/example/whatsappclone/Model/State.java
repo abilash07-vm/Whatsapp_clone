@@ -1,7 +1,7 @@
 package com.example.whatsappclone.Model;
 
 public class State {
-    private String date,time,state;
+    private String date, time, state;
 
     public State(String date, String time, String state) {
         this.date = date;

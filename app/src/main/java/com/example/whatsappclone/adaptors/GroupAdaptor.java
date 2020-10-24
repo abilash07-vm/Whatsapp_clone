@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.Activity.GroupInfoActivity;
 import com.example.whatsappclone.Activity.GroupMessageActivity;
-import com.example.whatsappclone.Model.Dummy;
+import com.example.whatsappclone.Model.GroupChatModel;
 import com.example.whatsappclone.R;
 
 import java.util.ArrayList;
@@ -23,13 +23,13 @@ import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
 
 public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> {
     private Context context;
-    private ArrayList<Dummy> groups =new ArrayList<>();
+    private ArrayList<GroupChatModel> groups = new ArrayList<>();
 
     public GroupAdaptor(Context context) {
         this.context = context;
     }
 
-    public void setGroups(ArrayList<Dummy> groups) {
+    public void setGroups(ArrayList<GroupChatModel> groups) {
         this.groups = groups;
         notifyDataSetChanged();
     }
@@ -37,15 +37,21 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.grp_model,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.grp_model, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         holder.grpName.setText(groups.get(position).getName());
-        if(groups.get(position).getImglink()!=null) {
-            Glide.with(context)
+        if (groups.get(position).getMsgcount() > 0) {
+            holder.msgcount.setVisibility(View.VISIBLE);
+            holder.msgcount.setText(String.valueOf(groups.get(position).getMsgcount()));
+        } else {
+            holder.msgcount.setVisibility(View.GONE);
+        }
+        if (groups.get(position).getImglink() != null) {
+            Glide.with(context.getApplicationContext())
                     .asBitmap()
                     .load(groups.get(position).getImglink())
                     .into(holder.grpIcon);
@@ -54,16 +60,16 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
         holder.grpIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context, GroupInfoActivity.class);
-                intent.putExtra(grpName_key,groups.get(position).getName());
+                Intent intent = new Intent(context, GroupInfoActivity.class);
+                intent.putExtra(grpName_key, groups.get(position).getName());
                 context.startActivity(intent);
             }
         });
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(context, GroupMessageActivity.class);
-                intent.putExtra("name",groups.get(position).getName());
+                Intent intent = new Intent(context, GroupMessageActivity.class);
+                intent.putExtra("name", groups.get(position).getName());
                 context.startActivity(intent);
             }
         });
@@ -77,11 +83,13 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private ImageView grpIcon;
-        private TextView grpName;
+        private TextView grpName, msgcount;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            grpIcon=itemView.findViewById(R.id.groupicon);
-            grpName=itemView.findViewById(R.id.groupName);
+            grpIcon = itemView.findViewById(R.id.groupicon);
+            grpName = itemView.findViewById(R.id.groupName);
+            msgcount = itemView.findViewById(R.id.count);
         }
     }
 }
