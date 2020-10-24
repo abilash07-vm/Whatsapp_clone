@@ -26,6 +26,7 @@ import com.example.whatsappclone.adaptors.ChatsAdaptor;
 import com.example.whatsappclone.adaptors.PrivateMessageAdaptor;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -49,6 +50,7 @@ import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key
 public class PrivateMesaageActivity extends AppCompatActivity {
     public static final String message_key = "private";
     private static final String TAG = "PrivateMesaageActivity";
+    private MaterialToolbar toolbar;
     private ImageView btnBack, btnSendMessage;
     private CircleImageView profileImg;
     private TextView profileName, lastSeen;
@@ -69,6 +71,12 @@ public class PrivateMesaageActivity extends AppCompatActivity {
             msgreceiverKey = intent.getStringExtra(message_key);
             if (msgreceiverKey != null) {
                 initViews();
+                toolbar.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        sendToProfileActivity();
+                    }
+                });
                 userRef.child(msgreceiverKey).child("name").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -87,6 +95,12 @@ public class PrivateMesaageActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    private void sendToProfileActivity() {
+        Intent intent1=new Intent(PrivateMesaageActivity.this,ProfileActivity.class);
+        intent1.putExtra(profile_key,msgreceiverKey);
+        startActivity(intent1);
     }
 
 
@@ -261,6 +275,7 @@ public class PrivateMesaageActivity extends AppCompatActivity {
         btnSendMessage = findViewById(R.id.btnSend);
         profileImg = findViewById(R.id.img);
         lastSeen = findViewById(R.id.lastseen);
+        toolbar=findViewById(R.id.toolbar);
         profileName = findViewById(R.id.name);
         messageBox = findViewById(R.id.msgBox);
         messageRecyView = findViewById(R.id.msgRecView);

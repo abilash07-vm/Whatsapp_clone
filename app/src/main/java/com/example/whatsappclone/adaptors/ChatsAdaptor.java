@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.whatsappclone.Activity.PrivateMesaageActivity;
+import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.Model.ChatsModel;
 import com.example.whatsappclone.R;
 import com.google.firebase.database.DataSnapshot;
@@ -26,6 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import static com.example.whatsappclone.Activity.PrivateMesaageActivity.message_key;
+import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> {
     private static final String TAG = "ChatsAdaptor";
@@ -84,6 +86,14 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
                             .load(snapshot.child("image").getValue())
                             .into(holder.image);
                 }
+                holder.image.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent1=new Intent(context, ProfileActivity.class);
+                        intent1.putExtra(profile_key,chats.get(position).getFrom());
+                        context.startActivity(intent1);
+                    }
+                });
                 if (snapshot.child("state").getValue().toString().equals("online"))
                     holder.online.setVisibility(View.VISIBLE);
                 else
