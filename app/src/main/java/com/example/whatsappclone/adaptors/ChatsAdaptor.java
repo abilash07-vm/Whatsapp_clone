@@ -81,7 +81,7 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
                 holder.name.setText(snapshot.child("name").getValue().toString());
                 holder.status.setText(snapshot.child("status").getValue().toString());
                 if (snapshot.child("image").exists() && isValidContextForGlide(context)) {
-                    Glide.with(context.getApplicationContext())
+                    Glide.with(context)
                             .asBitmap()
                             .load(snapshot.child("image").getValue())
                             .into(holder.image);

@@ -20,6 +20,7 @@ import com.example.whatsappclone.R;
 import java.util.ArrayList;
 
 import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> {
     private Context context;
@@ -50,8 +51,8 @@ public class GroupAdaptor extends RecyclerView.Adapter<GroupAdaptor.ViewHolder> 
         } else {
             holder.msgcount.setVisibility(View.GONE);
         }
-        if (groups.get(position).getImglink() != null) {
-            Glide.with(context.getApplicationContext())
+        if (groups.get(position).getImglink() != null && isValidContextForGlide(context)) {
+            Glide.with(context)
                     .asBitmap()
                     .load(groups.get(position).getImglink())
                     .into(holder.grpIcon);

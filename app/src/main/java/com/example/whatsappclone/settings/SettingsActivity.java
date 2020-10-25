@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,6 +42,7 @@ import java.util.Hashtable;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.whatsappclone.MainActivity.currentState;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final int GALLERY_REQUEST_CODE = 1, SETTINGS_REQUEST_CODE = 2, STORAGE_PERMISSION_CODE = 3;
@@ -85,8 +87,8 @@ public class SettingsActivity extends AppCompatActivity {
                         if (dataSnapshot.hasChild("status")) {
                             status.setText(dataSnapshot.child("status").getValue().toString());
                         }
-                        if (dataSnapshot.hasChild("image")) {
-                            Glide.with(getApplicationContext())
+                        if (dataSnapshot.hasChild("image") && isValidContextForGlide(SettingsActivity.this)) {
+                            Glide.with(SettingsActivity.this)
                                     .asBitmap()
                                     .load(dataSnapshot.child("image").getValue().toString())
                                     .into(profileImage);
@@ -106,7 +108,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void openGallery() {
-        if (ActivityCompat.checkSelfPermission(SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(SettingsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ) {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
@@ -141,7 +143,10 @@ public class SettingsActivity extends AppCompatActivity {
                             .start(this);
 
                 }
+                break;
+            case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                 if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+                    Log.d(TAG, "onActivityResult: uploading...");
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     if (resultCode == RESULT_OK) {
                         final StorageReference filePath = fileImgref.child(userid + ".jpg");

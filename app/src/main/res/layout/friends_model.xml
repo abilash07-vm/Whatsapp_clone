@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
     android:background="#FFFFFF"
     app:cardCornerRadius="7dp"
     app:cardElevation="5dp">
@@ -17,11 +16,12 @@
             android:layout_width="75dp"
             android:layout_height="75dp"
             android:src="@drawable/profile_image"
+            android:layout_marginStart="5dp"
             app:civ_border_width="3dp" />
 
         <TextView
             android:id="@+id/Name"
-            android:layout_width="130dp"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="5dp"
@@ -33,7 +33,7 @@
 
         <TextView
             android:id="@+id/Status"
-            android:layout_width="130dp"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_below="@+id/Name"
             android:layout_marginLeft="20dp"
@@ -41,7 +41,7 @@
             android:layout_toEndOf="@+id/Image"
             android:gravity="center"
             android:text="Status"
-            android:textSize="20sp" />
+            android:textSize="15sp" />
 
         <ImageView
             android:id="@+id/online"

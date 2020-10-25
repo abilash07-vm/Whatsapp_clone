@@ -13,7 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -283,8 +283,8 @@ public class GroupMessageActivity extends AppCompatActivity {
             grpRef.child("image").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists()) {
-                        Glide.with(getApplicationContext())
+                    if (snapshot.exists() && isValidContextForGlide(GroupMessageActivity.this)) {
+                        Glide.with(GroupMessageActivity.this)
                                 .asBitmap()
                                 .load(snapshot.getValue())
                                 .into(img);

@@ -43,6 +43,11 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -109,9 +114,9 @@ public class GroupInfoActivity extends AppCompatActivity {
 
     public void openGallery() {
         if (ActivityCompat.checkSelfPermission(GroupInfoActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(GroupInfoActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            intent.setType("image/*");
+            Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//            intent.setAction(Intent.ACTION_GET_CONTENT);
+//            intent.setType("image/*");
             startActivityForResult(intent, GALLERY_REQUEST_CODE);
         } else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(GroupInfoActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) || ActivityCompat.shouldShowRequestPermissionRationale(GroupInfoActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -143,6 +148,8 @@ public class GroupInfoActivity extends AppCompatActivity {
                             .start(this);
 
                 }
+                break;
+            case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                 if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     if (resultCode == RESULT_OK) {
@@ -214,8 +221,8 @@ public class GroupInfoActivity extends AppCompatActivity {
                                     holder.name.setText(snapshot.child("name").getValue().toString());
                                 if (snapshot.hasChild("status"))
                                     holder.status.setText(snapshot.child("status").getValue().toString());
-                                if (snapshot.hasChild("image")) {
-                                    Glide.with(getApplicationContext())
+                                if (snapshot.hasChild("image") && isValidContextForGlide(GroupInfoActivity.this)) {
+                                    Glide.with(GroupInfoActivity.this)
                                             .asBitmap()
                                             .load(snapshot.child("image").getValue().toString())
                                             .into(holder.image);
@@ -236,7 +243,13 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        userGrpRef.child(key).child(grpName.getText().toString()).child("type").setValue("member").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        final Map<String, Object> stateMap = new HashMap<>();
+                                        stateMap.put("type","member");
+                                        stateMap.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
+                                        stateMap.put("name", grpName.getText().toString());
+                                        stateMap.put("imglink", null);
+                                        stateMap.put("msgcount",0);
+                                        userGrpRef.child(key).child(grpName.getText().toString()).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {

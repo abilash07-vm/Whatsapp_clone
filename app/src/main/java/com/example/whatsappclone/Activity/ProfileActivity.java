@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -61,6 +61,7 @@ public class ProfileActivity extends AppCompatActivity {
                         if (btnRequest.getText().equals("Request")) {
                             sendRequest();
                         } else if (btnRequest.getText().equals("Cancel Request")) {
+                            btnCancel.setVisibility(View.GONE);
                             cancelRequset();
                         } else if (btnRequest.getText().equals("Accept request")) {
                             contactRef.child(sender).child(reciever).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -251,8 +252,8 @@ public class ProfileActivity extends AppCompatActivity {
                     if (snapshot.hasChild("status")) {
                         profileStatus.setText(snapshot.child("status").getValue().toString());
                     }
-                    if (snapshot.hasChild("image")) {
-                        Glide.with(getApplicationContext())
+                    if (snapshot.hasChild("image") && isValidContextForGlide(ProfileActivity.this)) {
+                        Glide.with(ProfileActivity.this)
                                 .asBitmap()
                                 .load(snapshot.child("image").getValue().toString())
                                 .into(profileImage);

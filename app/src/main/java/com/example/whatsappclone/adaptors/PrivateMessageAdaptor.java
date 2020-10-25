@@ -24,6 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAdaptor.ViewHolder> {
     private static final String TAG = "PrivateMessageAdaptor";
@@ -62,8 +63,8 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                    if (snapshot.hasChild("image")) {
-                        Glide.with(context.getApplicationContext())
+                    if (snapshot.hasChild("image") && isValidContextForGlide(context)) {
+                        Glide.with(context)
                                 .asBitmap()
                                 .load(snapshot.child("image").getValue())
                                 .into(holder.receiverImg);

@@ -147,7 +147,7 @@ public class PrivateMesaageActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     if (snapshot.hasChild("image") && ChatsAdaptor.isValidContextForGlide(PrivateMesaageActivity.this)) {
-                        Glide.with(getApplicationContext())
+                        Glide.with(PrivateMesaageActivity.this)
                                 .asBitmap()
                                 .load(snapshot.child("image").getValue())
                                 .into(profileImg);

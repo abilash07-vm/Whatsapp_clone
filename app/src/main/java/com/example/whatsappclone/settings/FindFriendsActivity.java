@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import static com.example.whatsappclone.MainActivity.currentState;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class FindFriendsActivity extends AppCompatActivity {
     public static final String profile_key = "key";
@@ -83,11 +84,13 @@ public class FindFriendsActivity extends AppCompatActivity {
                 Log.d(TAG, "onBindViewHolder: " + model.getName() + " " + model.getImage());
                 holder.name.setText(model.getName());
                 holder.status.setText(model.getStatus());
-                Glide.with(getApplicationContext())
-                        .asBitmap()
-                        .placeholder(R.drawable.profile_image)
-                        .load(model.getImage())
-                        .into(holder.image);
+                if(model.getImage()!=null && isValidContextForGlide(FindFriendsActivity.this)) {
+                    Glide.with(FindFriendsActivity.this)
+                            .asBitmap()
+                            .placeholder(R.drawable.profile_image)
+                            .load(model.getImage())
+                            .into(holder.image);
+                }
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

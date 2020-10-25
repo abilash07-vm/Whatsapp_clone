@@ -35,6 +35,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class ContactActivity extends AppCompatActivity {
@@ -96,8 +97,8 @@ public class ContactActivity extends AppCompatActivity {
                             } else {
                                 holder.online.setVisibility(View.GONE);
                             }
-                            if (snapshot.hasChild("image")) {
-                                Glide.with(getApplicationContext())
+                            if (snapshot.hasChild("image") && isValidContextForGlide(ContactActivity.this)) {
+                                Glide.with(ContactActivity.this)
                                         .asBitmap()
                                         .placeholder(R.drawable.profile_image)
                                         .load(snapshot.child("image").getValue().toString())
