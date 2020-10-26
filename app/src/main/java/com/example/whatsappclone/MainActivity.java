@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private Adapter adapter;
     private ViewPager viewPager;
     private TabLayout tabs;
+    private static  String currentUserid;
     private FloatingActionButton btn;
     private FirebaseAuth firebaseAuth;
     private MaterialToolbar toolbar;
@@ -75,14 +76,18 @@ public class MainActivity extends AppCompatActivity {
         stateMap.put("date", currentDate);
         stateMap.put("time", currentTime);
         stateMap.put("state", state);
-        FirebaseDatabase.getInstance().getReference().child("User").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isComplete()) {
-                    Log.d(TAG, "onComplete: status updated");
+        try {
+            FirebaseDatabase.getInstance().getReference().child("User").child(currentUserid).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isComplete()) {
+                        Log.d(TAG, "onComplete: status updated");
+                    }
                 }
-            }
-        });
+            });
+        }catch(NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -276,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
         currentUser = firebaseAuth.getCurrentUser();
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         rootRef = FirebaseDatabase.getInstance().getReference();
 
     }
@@ -284,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (currentUser != null) {
+            currentUserid=currentUser.getUid();
             currentState("offline");
         }
     }
