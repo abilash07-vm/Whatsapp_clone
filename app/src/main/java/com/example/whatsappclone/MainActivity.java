@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(grpName.equals("") || grpName!=null){
+                        if(grpName.equals("") || grpName==null){
                             Toast.makeText(MainActivity.this, "Group Name Cannot br Null", Toast.LENGTH_SHORT).show();
                         }else{
                             final String txtGroupName = grpName.getText().toString();
