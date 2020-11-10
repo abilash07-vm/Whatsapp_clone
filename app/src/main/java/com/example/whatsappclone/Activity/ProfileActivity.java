@@ -103,7 +103,7 @@ public class ProfileActivity extends AppCompatActivity {
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this)
                                     .setTitle("UnFriend")
-                                    .setMessage("Do want to Umfriend " + reciever)
+                                    .setMessage("Do want to Unfriend " + profileName.getText().toString())
                                     .setPositiveButton("Unfriend", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {

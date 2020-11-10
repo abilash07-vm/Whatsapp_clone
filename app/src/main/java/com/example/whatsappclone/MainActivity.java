@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -175,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {
                                                             if (task.isSuccessful()) {
-                                                                Snackbar.make(parent, "Thank  You for Your Valuable FeedBack...", Snackbar.LENGTH_LONG)
+                                                                Snackbar.make(parent, "Thank You for Your Valuable FeedBack...", Snackbar.LENGTH_LONG)
                                                                         .show();
                                                             }
                                                         }
@@ -222,7 +223,9 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (grpName != null) {
+                        if(grpName.equals("") || grpName!=null){
+                            Toast.makeText(MainActivity.this, "Group Name Cannot br Null", Toast.LENGTH_SHORT).show();
+                        }else{
                             final String txtGroupName = grpName.getText().toString();
                             rootRef.child("Groups").child(grpName.getText().toString()).setValue("")
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
