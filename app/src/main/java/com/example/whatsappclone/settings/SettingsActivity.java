@@ -107,8 +107,8 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-    private void openGallery() {
-        if (ActivityCompat.checkSelfPermission(SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ) {
+    public void openGallery() {
+        if (ActivityCompat.checkSelfPermission(SettingsActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.setType("image/*");
@@ -125,7 +125,7 @@ public class SettingsActivity extends AppCompatActivity {
                             }
                         }).show();
             } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
             }
         }
     }
@@ -135,8 +135,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case GALLERY_REQUEST_CODE:
-                if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-                    Uri imgUri = data.getData();
+                if (resultCode == RESULT_OK && data != null) {
                     CropImage.activity()
                             .setGuidelines(CropImageView.Guidelines.ON)
                             .setAspectRatio(1, 1)
@@ -145,22 +144,21 @@ public class SettingsActivity extends AppCompatActivity {
                 }
                 break;
             case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
-                if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-                    Log.d(TAG, "onActivityResult: uploading...");
-                    CropImage.ActivityResult result = CropImage.getActivityResult(data);
-                    if (resultCode == RESULT_OK) {
-                        final StorageReference filePath = fileImgref.child(userid + ".jpg");
-                        filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    filePath.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Uri> task) {
-                                            reference.child("User").child(userid).child("image").setValue(task.getResult().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<Void> task) {
-                                                    if (task.isSuccessful()) {
+                Log.d(TAG, "onActivityResult: uploading...");
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                if (resultCode == RESULT_OK) {
+                    final StorageReference filePath = fileImgref.child(userid + ".jpg");
+                    filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                filePath.getDownloadUrl().addOnCompleteListener(new OnCompleteListener<Uri>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Uri> task) {
+                                        reference.child("User").child(userid).child("image").setValue(task.getResult().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
                                                         Toast.makeText(SettingsActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
                                                     } else {
                                                         Toast.makeText(SettingsActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
@@ -176,7 +174,6 @@ public class SettingsActivity extends AppCompatActivity {
                             }
                         });
                     }
-                }
                 break;
             case SETTINGS_REQUEST_CODE:
                 openGallery();
@@ -212,6 +209,8 @@ public class SettingsActivity extends AppCompatActivity {
             profileMap.put("uid", userid);
             profileMap.put("name", userName);
             profileMap.put("status", userStatus);
+            profileMap.put("postcount", 0);
+            profileMap.put("deletedpostcount", 0);
             reference.child("User").child(userid).updateChildren(profileMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {

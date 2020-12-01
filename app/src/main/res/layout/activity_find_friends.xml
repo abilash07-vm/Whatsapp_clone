@@ -34,9 +34,19 @@
 
     </com.google.android.material.appbar.MaterialToolbar>
 
+    <EditText
+        android:id="@+id/search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
+        android:backgroundTint="@color/design_default_color_primary"
+        android:hint="search my friend"
+        android:textColor="#000"
+        android:textSize="20sp" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/friendsRecyView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/toolbar" />
+        android:layout_below="@+id/search" />
 </RelativeLayout>

@@ -37,6 +37,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
 import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
@@ -60,6 +61,7 @@ public class RequestFragment extends Fragment {
     public void onStart() {
         super.onStart();
         if (sender != null) {
+            btn.setVisibility(View.VISIBLE);
             currentState("online");
             FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
                     .setQuery(chatRef.child(sender), Contact.class)

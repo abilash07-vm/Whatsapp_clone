@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.whatsappclone.Activity.SignInWithGoggle;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -27,7 +28,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText email, password;
-    private Button btnlogin, btnphone;
+    private Button btnlogin, btnphone, btnGoogle;
     private TextView txtFrogetPass, txtSignUp, invalidemail;
     private FirebaseAuth firebaseAuth;
     private ProgressDialog loadingBar;
@@ -75,6 +76,13 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(LoginActivity.this, PhoneVerficationActivity.class);
+                startActivity(intent);
+            }
+        });
+        btnGoogle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, SignInWithGoggle.class);
                 startActivity(intent);
             }
         });
@@ -134,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
         password = findViewById(R.id.loginpassword);
         btnlogin = findViewById(R.id.btnLogin);
         btnphone = findViewById(R.id.btnLoginUsingPhone);
+        btnGoogle = findViewById(R.id.btnLoginUsingGoogle);
         txtFrogetPass = findViewById(R.id.forgotPassword);
         txtSignUp = findViewById(R.id.signUpNewAccount);
         invalidemail = findViewById(R.id.invalidemail);

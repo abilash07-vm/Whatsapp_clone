@@ -32,7 +32,13 @@ import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key
 public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> {
     private static final String TAG = "ChatsAdaptor";
     private Context context;
+    private String type = "chat";
     private ArrayList<ChatsModel> chats = new ArrayList<>();
+
+    public ChatsAdaptor(Context context, String type) {
+        this.context = context;
+        this.type = type;
+    }
 
     public ChatsAdaptor(Context context) {
         this.context = context;
@@ -66,20 +72,34 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-        if (chats.get(position).getMsgcount() > 0) {
-            holder.msgCount.setVisibility(View.VISIBLE);
-            holder.msgCount.setText(String.valueOf(chats.get(position).getMsgcount()));
-            holder.itemView.setBackgroundColor(Color.YELLOW);
-        } else {
-            holder.msgCount.setVisibility(View.GONE);
-            holder.itemView.setBackgroundColor(Color.WHITE);
+        if (type.equals("chat")) {
+            if (chats.get(position).getMsgcount() > 0) {
+                holder.msgCount.setVisibility(View.VISIBLE);
+                holder.msgCount.setText(String.valueOf(chats.get(position).getMsgcount()));
+            } else {
+                holder.msgCount.setVisibility(View.GONE);
+            }
         }
         Log.d(TAG, "onBindViewHolder: " + chats.get(position).toString());
         FirebaseDatabase.getInstance().getReference().child("User").child(chats.get(position).getFrom()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                holder.name.setText(snapshot.child("name").getValue().toString());
-                holder.status.setText(snapshot.child("status").getValue().toString());
+                if (snapshot.hasChild("name"))
+                    holder.name.setText(snapshot.child("name").getValue().toString());
+                String lastMessage = chats.get(position).getLastmessage();
+                if (lastMessage != null) {
+                    holder.status.setVisibility(View.VISIBLE);
+                    holder.status.setText(lastMessage);
+                    holder.status.setTextColor(Color.rgb(0, 0, 0));
+                    holder.itemView.setBackgroundColor(Color.rgb(192, 192, 192));
+                } else {
+                    holder.status.setTextColor(Color.rgb(0, 0, 0));
+                    if (type.equals("friend")) {
+                        holder.status.setText(snapshot.child("status").getValue().toString());
+                    } else {
+                        holder.status.setVisibility(View.GONE);
+                    }
+                }
                 if (snapshot.child("image").exists() && isValidContextForGlide(context)) {
                     Glide.with(context)
                             .asBitmap()
@@ -89,12 +109,12 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
                 holder.image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent1=new Intent(context, ProfileActivity.class);
+                        Intent intent1 = new Intent(context, ProfileActivity.class);
                         intent1.putExtra(profile_key,chats.get(position).getFrom());
                         context.startActivity(intent1);
                     }
                 });
-                if (snapshot.child("state").getValue().toString().equals("online"))
+                if (snapshot.hasChild("state") && snapshot.child("state").getValue().toString().equals("online") && type.equals("chat"))
                     holder.online.setVisibility(View.VISIBLE);
                 else
                     holder.online.setVisibility(View.GONE);

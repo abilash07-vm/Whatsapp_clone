@@ -98,19 +98,25 @@ public class PrivateMesaageActivity extends AppCompatActivity {
     }
 
     private void sendToProfileActivity() {
-        Intent intent1=new Intent(PrivateMesaageActivity.this,ProfileActivity.class);
-        intent1.putExtra(profile_key,msgreceiverKey);
+        Intent intent1 = new Intent(PrivateMesaageActivity.this, ProfileActivity.class);
+        intent1.putExtra(profile_key, msgreceiverKey);
         startActivity(intent1);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        messages.clear();
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
         if (msgreceiverKey != null) {
-            String senderRef = msgsenderKey + "/" + msgreceiverKey;
             currentState("online");
+            String senderRef = msgsenderKey + "/" + msgreceiverKey;
             rootRef.child("MessageState").child(senderRef).child("msgcount").setValue(0);
+            rootRef.child("MessageState").child(senderRef).child("lastmessage").setValue(null);
             rootRef.child("Messages").child(msgsenderKey).child(msgreceiverKey).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -225,6 +231,7 @@ public class PrivateMesaageActivity extends AppCompatActivity {
                                 messageBody.put("from", msgsenderKey);
                                 messageBody.put("msgcount", count + 1);
                                 messageBody.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
+                                messageBody.put("lastmessage", message);
                                 final Map messageBody2 = new HashMap();
                                 messageBody2.put("from", msgreceiverKey);
                                 messageBody2.put("msgcount", 0);
@@ -259,6 +266,9 @@ public class PrivateMesaageActivity extends AppCompatActivity {
         super.onPause();
         if (msgsenderKey != null) {
             currentState("offline");
+            String senderRef = msgsenderKey + "/" + msgreceiverKey;
+            rootRef.child("MessageState").child(senderRef).child("msgcount").setValue(0);
+            rootRef.child("MessageState").child(senderRef).child("lastmessage").setValue(null);
         }
     }
 
@@ -266,6 +276,9 @@ public class PrivateMesaageActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (msgsenderKey != null) {
+            String senderRef = msgsenderKey + "/" + msgreceiverKey;
+            rootRef.child("MessageState").child(senderRef).child("msgcount").setValue(0);
+            rootRef.child("MessageState").child(senderRef).child("lastmessage").setValue(null);
             currentState("offline");
         }
     }

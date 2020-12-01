@@ -43,7 +43,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
-import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -52,6 +51,7 @@ import java.util.Map;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.whatsappclone.MainActivity.currentState;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 import static com.example.whatsappclone.settings.SettingsActivity.GALLERY_REQUEST_CODE;
 import static com.example.whatsappclone.settings.SettingsActivity.SETTINGS_REQUEST_CODE;
 import static com.example.whatsappclone.settings.SettingsActivity.STORAGE_PERMISSION_CODE;
@@ -231,7 +231,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         if (snapshot.hasChild("type")) {
-                                            holder.itemView.setVisibility(View.GONE);
+                                            holder.itemView.setVisibility(View.INVISIBLE);
                                         }
                                     }
 

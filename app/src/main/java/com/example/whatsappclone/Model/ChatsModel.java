@@ -1,7 +1,7 @@
 package com.example.whatsappclone.Model;
 
 public class ChatsModel {
-    private String from;
+    private String from, lastmessage;
     private int msgcount;
     private long timestamp;
 
@@ -12,6 +12,13 @@ public class ChatsModel {
         this.msgcount = msgcount;
         this.timestamp = timestamp;
         this.from = from;
+    }
+
+    public ChatsModel(String from, String lastmessage, int msgcount, long timestamp) {
+        this.from = from;
+        this.lastmessage = lastmessage;
+        this.msgcount = msgcount;
+        this.timestamp = timestamp;
     }
 
     public int getMsgcount() {
@@ -38,10 +45,19 @@ public class ChatsModel {
         this.from = from;
     }
 
+    public String getLastmessage() {
+        return lastmessage;
+    }
+
+    public void setLastmessage(String lastmessage) {
+        this.lastmessage = lastmessage;
+    }
+
     @Override
     public String toString() {
         return "ChatsModel{" +
-                "sender='" + from + '\'' +
+                "from='" + from + '\'' +
+                ", lastmessage='" + lastmessage + '\'' +
                 ", msgcount=" + msgcount +
                 ", timestamp=" + timestamp +
                 '}';

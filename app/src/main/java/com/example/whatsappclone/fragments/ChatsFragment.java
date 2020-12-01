@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
 
 public class ChatsFragment extends Fragment {
@@ -35,7 +35,6 @@ public class ChatsFragment extends Fragment {
     private MaterialToolbar toolbar;
     private View view;
     private RecyclerView chatsRecyView;
-    private ImageView btnBack;
     private DatabaseReference contactRef, userRef, userStateRef;
     private ArrayList<ChatsModel> chats;
     private FirebaseAuth auth;
@@ -54,6 +53,7 @@ public class ChatsFragment extends Fragment {
     public void onStart() {
         super.onStart();
         if (currentUser != null) {
+            btn.setVisibility(View.VISIBLE);
             currentState("online");
             userStateRef.addValueEventListener(new ValueEventListener() {
                 @Override

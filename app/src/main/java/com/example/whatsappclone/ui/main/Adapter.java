@@ -11,13 +11,14 @@ import androidx.fragment.app.FragmentPagerAdapter;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.fragments.ChatsFragment;
 import com.example.whatsappclone.fragments.GroupFragments;
+import com.example.whatsappclone.fragments.PostFragment;
 import com.example.whatsappclone.fragments.RequestFragment;
 
 
 public class Adapter extends FragmentPagerAdapter {
 
     @StringRes
-    private static final int[] TAB_TITLES = new int[]{R.string.tab_1, R.string.tab_2, R.string.tab_3};
+    private static final int[] TAB_TITLES = new int[]{R.string.tab_0, R.string.tab_1, R.string.tab_2, R.string.tab_3};
     private final Context mContext;
 
     public Adapter(Context context, FragmentManager fm) {
@@ -31,10 +32,12 @@ public class Adapter extends FragmentPagerAdapter {
         // Return a PlaceholderFragment (defined as a static inner class below).
         switch (position) {
             case 0:
-                return new ChatsFragment();
+                return new PostFragment();
             case 1:
-                return new RequestFragment();
+                return new ChatsFragment();
             case 2:
+                return new RequestFragment();
+            case 3:
                 return new GroupFragments();
             default:
                 return new ChatsFragment();

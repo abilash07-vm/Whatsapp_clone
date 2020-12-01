@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -26,6 +25,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.whatsappclone.Activity.ContactActivity;
+import com.example.whatsappclone.Activity.SignInWithGoggle;
 import com.example.whatsappclone.loginandsignup.LoginActivity;
 import com.example.whatsappclone.settings.BrowserActivity;
 import com.example.whatsappclone.settings.FindFriendsActivity;
@@ -59,12 +59,12 @@ public class MainActivity extends AppCompatActivity {
     private Adapter adapter;
     private ViewPager viewPager;
     private TabLayout tabs;
-    private static  String currentUserid;
-    private FloatingActionButton btn;
+    private static String currentUserid;
+    public static FloatingActionButton btn;
     private FirebaseAuth firebaseAuth;
     private MaterialToolbar toolbar;
     private DatabaseReference rootRef;
-    private CoordinatorLayout parent;
+    public static CoordinatorLayout parent;
 
     public static void currentState(String state) {
         Calendar calendar = Calendar.getInstance();
@@ -117,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog, int which) {
                                         currentState("offline");
                                         firebaseAuth.signOut();
+                                        SignInWithGoggle.signOut(MainActivity.this);
                                         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                                         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                                         startActivity(intent);

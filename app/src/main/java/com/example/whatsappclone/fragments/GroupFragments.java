@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
 
 public class GroupFragments extends Fragment {
@@ -51,6 +52,7 @@ public class GroupFragments extends Fragment {
         if (currUsers != null) {
             getAllGroupNames();
             currentState("online");
+            btn.setVisibility(View.VISIBLE);
         }
     }
 
