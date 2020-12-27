@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -33,6 +34,7 @@ public class PhoneVerficationActivity extends AppCompatActivity {
     private PhoneAuthProvider.ForceResendingToken token;
     private FirebaseAuth firebaseAuth;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +50,7 @@ public class PhoneVerficationActivity extends AppCompatActivity {
                     Toast.makeText(PhoneVerficationActivity.this, "Invalid PhoneNumber", Toast.LENGTH_SHORT).show();
 
                 } else {
+                    progressBar.show(getSupportFragmentManager(), "verification Code sent");
                     sendVerifationCode();
                 }
 
@@ -81,11 +84,13 @@ public class PhoneVerficationActivity extends AppCompatActivity {
 
             @Override
             public void onVerificationFailed(@NonNull FirebaseException e) {
+                progressBar.dismiss();
                 Toast.makeText(PhoneVerficationActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                progressBar.dismiss();
                 verifationId = s;
                 token = forceResendingToken;
                 Toast.makeText(PhoneVerficationActivity.this, "Code Sent...", Toast.LENGTH_SHORT).show();
@@ -128,12 +133,14 @@ public class PhoneVerficationActivity extends AppCompatActivity {
 
                 } else {
                     Toast.makeText(PhoneVerficationActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                    progressBar.dismiss();
                 }
             }
         });
     }
 
     private void initViews() {
+        progressBar = new ProgressBar();
         txtPhoneNum = findViewById(R.id.txtPhoneNumber);
         verificationCode = findViewById(R.id.txtVerficationCode);
         btnSubmit = findViewById(R.id.btnSubmit);

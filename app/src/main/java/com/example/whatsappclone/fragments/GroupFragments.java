@@ -1,9 +1,11 @@
 package com.example.whatsappclone.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,13 +28,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
+import static com.example.whatsappclone.MainActivity.grpcount;
 
 public class GroupFragments extends Fragment {
+    private static final String TAG = "GroupFragments";
     private RecyclerView grpRecyView;
     private DatabaseReference grpByUserRef, grpRef;
     private FirebaseUser currUsers;
+    private TextView txtShowNotAvailable;
     private ArrayList<GroupChatModel> groups;
     private GroupAdaptor adaptor;
 
@@ -52,7 +56,12 @@ public class GroupFragments extends Fragment {
         if (currUsers != null) {
             getAllGroupNames();
             currentState("online");
-            btn.setVisibility(View.VISIBLE);
+        }
+        if (groups.size() == 0) {
+            txtShowNotAvailable.setText("No Group Avialable Add Group \n by Menu->New Group");
+            txtShowNotAvailable.setVisibility(View.VISIBLE);
+        } else {
+            txtShowNotAvailable.setVisibility(View.GONE);
         }
     }
 
@@ -66,6 +75,7 @@ public class GroupFragments extends Fragment {
 
     private void initViews(View view) {
         grpRecyView = view.findViewById(R.id.recyView);
+        txtShowNotAvailable = view.findViewById(R.id.txtischatAvailable);
         groups = new ArrayList<>();
         currUsers = FirebaseAuth.getInstance().getCurrentUser();
         if (currUsers != null)
@@ -76,6 +86,16 @@ public class GroupFragments extends Fragment {
         grpRecyView.setAdapter(adaptor);
     }
 
+    private int getCount() {
+        int c = 0;
+        for (GroupChatModel i : groups) {
+            if (i.getMsgcount() > 0) {
+                c++;
+            }
+        }
+        return c;
+    }
+
     private void getAllGroupNames() {
         grpByUserRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -83,6 +103,7 @@ public class GroupFragments extends Fragment {
                 groups.clear();
                 for (DataSnapshot snap : snapshot.getChildren()) {
                     GroupChatModel group = snap.getValue(GroupChatModel.class);
+                    Log.d(TAG, "onDataChange: " + group.toString());
                     groups.add(group);
                     Collections.sort(groups, new Comparator<GroupChatModel>() {
                         @Override
@@ -90,7 +111,15 @@ public class GroupFragments extends Fragment {
                             return o1.getTimestamp() < o2.getTimestamp() ? 1 : -1;
                         }
                     });
+                    txtShowNotAvailable.setVisibility(View.GONE);
                     adaptor.setGroups(groups);
+                    int count = getCount();
+                    if (count == 0) {
+                        grpcount.setVisibility(View.GONE);
+                    } else {
+                        grpcount.setVisibility(View.VISIBLE);
+                        grpcount.setText(String.valueOf(count));
+                    }
 
                 }
             }

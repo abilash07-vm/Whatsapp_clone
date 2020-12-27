@@ -70,6 +70,7 @@ public class PrivateMesaageActivity extends AppCompatActivity {
         if (intent != null) {
             msgreceiverKey = intent.getStringExtra(message_key);
             if (msgreceiverKey != null) {
+                Log.d(TAG, "onCreate: user key " + msgreceiverKey);
                 initViews();
                 toolbar.setOnClickListener(new View.OnClickListener() {
                     @Override

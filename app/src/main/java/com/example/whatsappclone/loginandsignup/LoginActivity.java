@@ -1,6 +1,5 @@
 package com.example.whatsappclone.loginandsignup;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,7 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.whatsappclone.Activity.SignInWithGoggle;
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,11 +27,11 @@ import com.google.firebase.iid.FirebaseInstanceId;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText email, password;
-    private Button btnlogin, btnphone, btnGoogle;
+    private Button btnlogin, btnphone;
     private TextView txtFrogetPass, txtSignUp, invalidemail;
     private FirebaseAuth firebaseAuth;
-    private ProgressDialog loadingBar;
     private DatabaseReference userRef;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +71,13 @@ public class LoginActivity extends AppCompatActivity {
                 login();
             }
         });
+        btnlogin.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                btnphone.setVisibility(View.VISIBLE);
+                return true;
+            }
+        });
         btnphone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,10 +85,10 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        btnGoogle.setOnClickListener(new View.OnClickListener() {
+        txtFrogetPass.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, SignInWithGoggle.class);
+                Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
                 startActivity(intent);
             }
         });
@@ -94,14 +100,12 @@ public class LoginActivity extends AppCompatActivity {
         if (txtemail.equals("") || txtpass.equals("") || !checkEmail(txtemail)) {
             Toast.makeText(LoginActivity.this, "Invalid details...", Toast.LENGTH_SHORT).show();
         } else {
-            loadingBar.setTitle("Sign Up");
-            loadingBar.setMessage("Creating account please wait...");
-            loadingBar.setCanceledOnTouchOutside(true);
-            loadingBar.create();
+            progressBar.show(getSupportFragmentManager(), "login");
             firebaseAuth.signInWithEmailAndPassword(txtemail, txtpass)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
+                            progressBar.dismiss();
                             if (task.isSuccessful()) {
                                 String userId = firebaseAuth.getUid();
                                 String device_token = FirebaseInstanceId.getInstance().getToken();
@@ -116,11 +120,8 @@ public class LoginActivity extends AppCompatActivity {
                                     }
                                 });
 
-
-                                loadingBar.dismiss();
                             } else {
                                 Toast.makeText(LoginActivity.this, task.getException().toString(), Toast.LENGTH_LONG).show();
-                                loadingBar.dismiss();
                             }
                         }
                     });
@@ -142,13 +143,12 @@ public class LoginActivity extends AppCompatActivity {
         password = findViewById(R.id.loginpassword);
         btnlogin = findViewById(R.id.btnLogin);
         btnphone = findViewById(R.id.btnLoginUsingPhone);
-        btnGoogle = findViewById(R.id.btnLoginUsingGoogle);
         txtFrogetPass = findViewById(R.id.forgotPassword);
         txtSignUp = findViewById(R.id.signUpNewAccount);
         invalidemail = findViewById(R.id.invalidemail);
         firebaseAuth = FirebaseAuth.getInstance();
         userRef = FirebaseDatabase.getInstance().getReference().child("User");
-        loadingBar = new ProgressDialog(this);
+        progressBar = new ProgressBar();
     }
 
 }

@@ -16,7 +16,7 @@
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/profile_Image"
                 android:layout_width="250dp"
-                android:layout_height="200dp"
+                android:layout_height="300dp"
                 android:layout_marginTop="70dp"
                 android:src="@drawable/profile_image" />
 
@@ -58,6 +58,16 @@
                     android:text="0"
                     android:textColor="#fff"
                     android:textSize="25sp" />
+
+                <Button
+                    android:id="@+id/btnedit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/postCount"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="10dp"
+                    android:text="Edit" />
 
 
             </RelativeLayout>

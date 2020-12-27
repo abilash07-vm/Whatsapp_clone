@@ -63,6 +63,7 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
         notifyDataSetChanged();
     }
 
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -86,7 +87,10 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.hasChild("name"))
                     holder.name.setText(snapshot.child("name").getValue().toString());
-                String lastMessage = chats.get(position).getLastmessage();
+                String lastMessage = null;
+                if (type.equals("chat")) {
+                    lastMessage = chats.get(position).getLastmessage();
+                }
                 if (lastMessage != null) {
                     holder.status.setVisibility(View.VISIBLE);
                     holder.status.setText(lastMessage);
@@ -105,6 +109,8 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
                             .asBitmap()
                             .load(snapshot.child("image").getValue())
                             .into(holder.image);
+                } else {
+                    holder.image.setImageResource(R.drawable.profile_image);
                 }
                 holder.image.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -121,10 +127,16 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(context, PrivateMesaageActivity.class);
-                        intent.putExtra(message_key, chats.get(position).getFrom());
-                        Log.d(TAG, "onClick: " + chats.toString());
-                        context.startActivity(intent);
+                        if (type.equals("friend")) {
+                            Intent intent = new Intent(context, ProfileActivity.class);
+                            intent.putExtra(profile_key, chats.get(position).getFrom());
+                            context.startActivity(intent);
+                        } else {
+                            Intent intent = new Intent(context, PrivateMesaageActivity.class);
+                            intent.putExtra(message_key, chats.get(position).getFrom());
+                            Log.d(TAG, "onClick: " + chats.toString());
+                            context.startActivity(intent);
+                        }
                     }
                 });
 

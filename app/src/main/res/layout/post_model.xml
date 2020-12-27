@@ -144,6 +144,7 @@
                     android:layout_centerVertical="true"
                     android:gravity="center"
                     android:text="Add"
+                    android:visibility="gone"
                     android:textColor="#fff"
                     android:textSize="20sp"
                     app:rippleColor="@color/colorPrimary" />

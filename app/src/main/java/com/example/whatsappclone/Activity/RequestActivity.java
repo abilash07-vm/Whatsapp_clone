@@ -1,4 +1,4 @@
-package com.example.whatsappclone.fragments;
+package com.example.whatsappclone.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,17 +7,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Activity.ProfileActivity;
+import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -37,31 +38,30 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
 import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
-public class RequestFragment extends Fragment {
+public class RequestActivity extends AppCompatActivity {
     private static final String TAG = "RequestFragment";
     private RecyclerView reqRecyView;
     private DatabaseReference chatRef, userRef, contactRef, rootRef;
     private String sender, receiver;
     private boolean isAccept = false;
+    private ImageView btnBack;
 
-    @Nullable
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = getActivity().getLayoutInflater().inflate(R.layout.request_fragment, container, false);
-        initViews(view);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_request);
 
-        return view;
+        initViews();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         if (sender != null) {
-            btn.setVisibility(View.VISIBLE);
             currentState("online");
             FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
                     .setQuery(chatRef.child(sender), Contact.class)
@@ -77,7 +77,7 @@ public class RequestFragment extends Fragment {
                                 holder.name.setText(snapshot.child("name").getValue().toString());
                                 holder.status.setText(snapshot.child("status").getValue().toString());
                                 if (snapshot.child("image").getValue() != null)
-                                    Glide.with(getContext().getApplicationContext())
+                                    Glide.with(getApplicationContext())
                                             .asBitmap()
                                             .load(snapshot.child("image").getValue().toString())
                                             .into(holder.image);
@@ -130,7 +130,7 @@ public class RequestFragment extends Fragment {
                                                                             @Override
                                                                             public void onComplete(@NonNull Task task) {
                                                                                 if (task.isSuccessful()) {
-                                                                                    Toast.makeText(getActivity(), "Contact saved Successfully", Toast.LENGTH_SHORT).show();
+                                                                                    Toast.makeText(RequestActivity.this, "Contact saved Successfully", Toast.LENGTH_SHORT).show();
                                                                                 }
                                                                             }
                                                                         });
@@ -154,7 +154,7 @@ public class RequestFragment extends Fragment {
                                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+                                        Intent intent = new Intent(RequestActivity.this, ProfileActivity.class);
                                         intent.putExtra(profile_key, receiver);
                                         startActivity(intent);
                                     }
@@ -199,7 +199,7 @@ public class RequestFragment extends Fragment {
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 if (!isAccept)
-                                    Toast.makeText(getActivity(), "Request Cancelled", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(RequestActivity.this, "Request Cancelled", Toast.LENGTH_SHORT).show();
                                 else {
                                     Log.d(TAG, "onComplete: Request Accepted");
                                 }
@@ -211,19 +211,27 @@ public class RequestFragment extends Fragment {
         });
     }
 
-    private void initViews(View view) {
-        reqRecyView = view.findViewById(R.id.requestRecyView);
+    private void initViews() {
+        reqRecyView = findViewById(R.id.requestRecyView);
         try {
             sender = FirebaseAuth.getInstance().getCurrentUser().getUid();
         } catch (Exception e) {
             e.printStackTrace();
         }
         rootRef = FirebaseDatabase.getInstance().getReference();
-        reqRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        reqRecyView.setLayoutManager(new LinearLayoutManager(this));
         chatRef = rootRef.child("ChatRequest");
         contactRef = rootRef.child("Contact");
         userRef = rootRef.child("User");
 
+        btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RequestActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     public static class reqViewHolder extends RecyclerView.ViewHolder {

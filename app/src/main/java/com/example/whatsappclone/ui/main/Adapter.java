@@ -12,7 +12,7 @@ import com.example.whatsappclone.R;
 import com.example.whatsappclone.fragments.ChatsFragment;
 import com.example.whatsappclone.fragments.GroupFragments;
 import com.example.whatsappclone.fragments.PostFragment;
-import com.example.whatsappclone.fragments.RequestFragment;
+import com.example.whatsappclone.fragments.StatusFragment;
 
 
 public class Adapter extends FragmentPagerAdapter {
@@ -36,7 +36,7 @@ public class Adapter extends FragmentPagerAdapter {
             case 1:
                 return new ChatsFragment();
             case 2:
-                return new RequestFragment();
+                return new StatusFragment();
             case 3:
                 return new GroupFragments();
             default:

@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.Model.GroupChatModel;
 import com.example.whatsappclone.R;
@@ -45,8 +46,6 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -68,6 +67,7 @@ public class GroupInfoActivity extends AppCompatActivity {
     private String key, userid;
     private MaterialCardView AddMemberCardView;
     private RelativeLayout parent;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +153,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                 if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     if (resultCode == RESULT_OK) {
+                        progressBar.show(getSupportFragmentManager(), "grp icon");
                         final StorageReference filePath = fileImgref.child(grpName + ".jpg");
                         filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                             @Override
@@ -164,17 +165,21 @@ public class GroupInfoActivity extends AppCompatActivity {
                                             grpRef.child("image").setValue(task.getResult().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
+                                                    progressBar.dismiss();
                                                     if (task.isSuccessful()) {
                                                         Toast.makeText(GroupInfoActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
                                                     } else {
                                                         Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
                                                     }
+
                                                 }
                                             });
+
                                         }
                                     });
 
                                 } else {
+                                    progressBar.dismiss();
                                     Toast.makeText(GroupInfoActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -210,10 +215,10 @@ public class GroupInfoActivity extends AppCompatActivity {
         FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, ContactActivity.contactViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final ContactActivity.contactViewHolder holder, int position, @NonNull final Contact model) {
-                final String key = getRef(position).getKey();
-                Log.d(TAG, "onBindViewHolder: " + key);
+                final String userkey = getRef(position).getKey();
+                Log.d(TAG, "onBindViewHolder: " + userkey);
                 try {
-                    userRef.child(key).addValueEventListener(new ValueEventListener() {
+                    userRef.child(userkey).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull final DataSnapshot snapshot) {
                             if (snapshot.exists()) {
@@ -227,7 +232,7 @@ public class GroupInfoActivity extends AppCompatActivity {
                                             .load(snapshot.child("image").getValue().toString())
                                             .into(holder.image);
                                 }
-                                grpmemberRef.child(key).addValueEventListener(new ValueEventListener() {
+                                grpmemberRef.child(userkey).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         if (snapshot.hasChild("type")) {
@@ -243,17 +248,12 @@ public class GroupInfoActivity extends AppCompatActivity {
                                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        final Map<String, Object> stateMap = new HashMap<>();
-                                        stateMap.put("type","member");
-                                        stateMap.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
-                                        stateMap.put("name", grpName.getText().toString());
-                                        stateMap.put("imglink", null);
-                                        stateMap.put("msgcount",0);
-                                        userGrpRef.child(key).child(grpName.getText().toString()).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        GroupChatModel grpmodel = new GroupChatModel("admin", new Timestamp(System.currentTimeMillis()).getTime(), null, grpName.getText().toString(), null, key, 0);
+                                        userGrpRef.child(userkey).child(key).setValue(grpmodel).addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                    grpmemberRef.child(key).child("type").setValue("member").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    grpmemberRef.child(userkey).child("type").setValue("member").addOnCompleteListener(new OnCompleteListener<Void>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<Void> task) {
                                                             if (task.isSuccessful()) {
@@ -300,7 +300,17 @@ public class GroupInfoActivity extends AppCompatActivity {
         super.onStart();
         if (key != null) {
             currentState("online");
-            grpName.setText(key);
+            userGrpRef.child(userid).child(key).child("name").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    grpName.setText(snapshot.getValue().toString());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
             grpRef.child("image").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -391,6 +401,7 @@ public class GroupInfoActivity extends AppCompatActivity {
         userid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         AddMemberCardView = findViewById(R.id.secondCardView);
         fileImgref = FirebaseStorage.getInstance().getReference().child("Profile Image");
+        progressBar = new ProgressBar();
     }
 
     @Override

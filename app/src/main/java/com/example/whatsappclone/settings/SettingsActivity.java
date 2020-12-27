@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -147,6 +148,8 @@ public class SettingsActivity extends AppCompatActivity {
                 Log.d(TAG, "onActivityResult: uploading...");
                 CropImage.ActivityResult result = CropImage.getActivityResult(data);
                 if (resultCode == RESULT_OK) {
+                    final ProgressBar loading = new ProgressBar();
+                    loading.show(getSupportFragmentManager(), "Loading");
                     final StorageReference filePath = fileImgref.child(userid + ".jpg");
                     filePath.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -159,9 +162,11 @@ public class SettingsActivity extends AppCompatActivity {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                        Toast.makeText(SettingsActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(SettingsActivity.this, "Uploaded Sucessfully", Toast.LENGTH_SHORT).show();
+                                                    loading.dismiss();
                                                     } else {
-                                                        Toast.makeText(SettingsActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                                    Toast.makeText(SettingsActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                                    loading.dismiss();
                                                     }
                                                 }
                                             });
@@ -169,7 +174,8 @@ public class SettingsActivity extends AppCompatActivity {
                                     });
 
                                 } else {
-                                    Toast.makeText(SettingsActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SettingsActivity.this, task.getException().toString(), Toast.LENGTH_SHORT).show();
+                                loading.dismiss();
                                 }
                             }
                         });

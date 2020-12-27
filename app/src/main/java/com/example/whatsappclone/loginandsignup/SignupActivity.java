@@ -1,6 +1,5 @@
 package com.example.whatsappclone.loginandsignup;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -31,7 +31,7 @@ public class SignupActivity extends AppCompatActivity {
     private Button btnSignup;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference rootReference;
-    private ProgressDialog loadingBar;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,16 +116,13 @@ public class SignupActivity extends AppCompatActivity {
         } else if (txtemail.equals("") || txtrepass.equals("") || !txtpass.equals(txtrepass) || !checkEmail(txtemail)) {
             Toast.makeText(SignupActivity.this, "Invalid details...", Toast.LENGTH_SHORT).show();
         } else {
-            loadingBar.setTitle("Sign Up");
-            loadingBar.setMessage("Creating account please wait...");
-            loadingBar.setCanceledOnTouchOutside(true);
-            loadingBar.create();
+            progressBar.show(getSupportFragmentManager(), "signup");
             firebaseAuth.createUserWithEmailAndPassword(txtemail, txtpass)
                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                loadingBar.dismiss();
+                                progressBar.dismiss();
                                 String currentUserid = firebaseAuth.getCurrentUser().getUid();
                                 rootReference.child("User").child(currentUserid).setValue("");
                                 String userId = firebaseAuth.getUid();
@@ -160,6 +157,6 @@ public class SignupActivity extends AppCompatActivity {
         invalidemail = findViewById(R.id.invalidemail);
         firebaseAuth = FirebaseAuth.getInstance();
         rootReference = FirebaseDatabase.getInstance().getReference();
-        loadingBar = new ProgressDialog(this);
+        progressBar = new ProgressBar();
     }
 }

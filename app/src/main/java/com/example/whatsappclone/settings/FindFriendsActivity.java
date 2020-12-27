@@ -2,32 +2,34 @@ package com.example.whatsappclone.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-import com.example.whatsappclone.Activity.ProfileActivity;
 import com.example.whatsappclone.MainActivity;
-import com.example.whatsappclone.Model.Contact;
+import com.example.whatsappclone.Model.ChatsModel;
 import com.example.whatsappclone.R;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.example.whatsappclone.adaptors.ChatsAdaptor;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+
 import static com.example.whatsappclone.MainActivity.currentState;
-import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class FindFriendsActivity extends AppCompatActivity {
     public static final String profile_key = "key";
@@ -37,6 +39,10 @@ public class FindFriendsActivity extends AppCompatActivity {
     private RecyclerView friendsRecyView;
     private MaterialToolbar toolbar;
     private String currUser;
+    private ArrayList<ChatsModel> chats;
+    private ArrayList<String> names;
+    private EditText searchBox;
+    private ChatsAdaptor adaptor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +56,38 @@ public class FindFriendsActivity extends AppCompatActivity {
                 sendBackToMainActivity();
             }
         });
+        searchBox.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                showSuggestion(s.toString());
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                showSuggestion(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+
+    }
+
+    private void showSuggestion(String s) {
+        ArrayList<ChatsModel> chatsuggestion = new ArrayList<>();
+        Log.d(TAG, "showSuggestion: all su " + names);
+        for (String i : names) {
+            if (s.equalsIgnoreCase(i.substring(0, s.length()))) {
+                ChatsModel chat = new ChatsModel();
+                chat.setFrom(chats.get(names.indexOf(i)).getFrom());
+                chatsuggestion.add(chat);
+            }
+        }
+        Log.d(TAG, "showSuggestion: all suggestion" + chatsuggestion);
+        adaptor.setChats(chatsuggestion);
 
     }
 
@@ -63,54 +100,54 @@ public class FindFriendsActivity extends AppCompatActivity {
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         friendsRecyView = findViewById(R.id.friendsRecyView);
+        friendsRecyView.setLayoutManager(new LinearLayoutManager(FindFriendsActivity.this));
+        adaptor = new ChatsAdaptor(FindFriendsActivity.this, "friend");
+        friendsRecyView.setAdapter(adaptor);
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle("Find Friends");
+        searchBox = findViewById(R.id.search);
+        names = new ArrayList<>();
         userRef = FirebaseDatabase.getInstance().getReference().child("User");
         currUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        chats = new ArrayList<>();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         currentState("online");
-        FirebaseRecyclerOptions<Contact> options = new FirebaseRecyclerOptions.Builder<Contact>()
-                .setQuery(userRef, Contact.class)
-                .build();
-        Log.d(TAG, "onStart: " + options);
-        FirebaseRecyclerAdapter<Contact, FindFriendsViewHolder> adapter = new FirebaseRecyclerAdapter<Contact, FindFriendsViewHolder>(options) {
+        userRef.addChildEventListener(new ChildEventListener() {
             @Override
-            protected void onBindViewHolder(@NonNull final FindFriendsViewHolder holder, final int position, @NonNull Contact model) {
-                Log.d(TAG, "onBindViewHolder: " + model.getName() + " " + model.getImage());
-                holder.name.setText(model.getName());
-                holder.status.setText(model.getStatus());
-                if(model.getImage()!=null && isValidContextForGlide(FindFriendsActivity.this)) {
-                    Glide.with(FindFriendsActivity.this)
-                            .asBitmap()
-                            .placeholder(R.drawable.profile_image)
-                            .load(model.getImage())
-                            .into(holder.image);
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                if (snapshot.exists()) {
+                    chats.add(new ChatsModel(snapshot.child("uid").getValue().toString()));
+                    names.add(snapshot.child("name").getValue().toString());
+                    adaptor.setChats(chats);
                 }
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(FindFriendsActivity.this, ProfileActivity.class);
-                        intent.putExtra(profile_key, getRef(position).getKey());
-                        startActivity(intent);
-                    }
-                });
             }
 
-            @NonNull
             @Override
-            public FindFriendsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.friends_model, parent, false);
-                return new FindFriendsViewHolder(view);
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
             }
-        };
-        friendsRecyView.setAdapter(adapter);
-        friendsRecyView.setLayoutManager(new LinearLayoutManager(this));
-        adapter.startListening();
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override
@@ -118,6 +155,8 @@ public class FindFriendsActivity extends AppCompatActivity {
         super.onPause();
         if (currUser != null) {
             currentState("offline");
+            chats.clear();
+            names.clear();
         }
     }
 
@@ -135,16 +174,4 @@ public class FindFriendsActivity extends AppCompatActivity {
         sendBackToMainActivity();
     }
 
-    public static class FindFriendsViewHolder extends RecyclerView.ViewHolder {
-        public TextView name, status;
-        public ImageView image, online;
-
-        public FindFriendsViewHolder(@NonNull View itemView) {
-            super(itemView);
-            name = itemView.findViewById(R.id.Name);
-            status = itemView.findViewById(R.id.Status);
-            image = itemView.findViewById(R.id.Image);
-//            online=itemView.findViewById(R.id.online);
-        }
-    }
 }

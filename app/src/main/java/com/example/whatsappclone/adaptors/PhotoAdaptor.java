@@ -1,7 +1,6 @@
 package com.example.whatsappclone.adaptors;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +15,6 @@ import com.example.whatsappclone.Model.CompletePostModel;
 import com.example.whatsappclone.R;
 
 import java.util.ArrayList;
-
-import static com.example.whatsappclone.Activity.ProfileActivity.POST_ID;
-import static com.example.whatsappclone.settings.FindFriendsActivity.profile_key;
 
 public class PhotoAdaptor extends RecyclerView.Adapter<PhotoAdaptor.ViewHolder> {
     private ArrayList<CompletePostModel> post = new ArrayList<>();
@@ -50,10 +46,12 @@ public class PhotoAdaptor extends RecyclerView.Adapter<PhotoAdaptor.ViewHolder> 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, ProfileActivity.class);
-                intent.putExtra(POST_ID, post.get(position).getPostid());
-                intent.putExtra(profile_key, post.get(position).getUserid());
-                context.startActivity(intent);
+//                Intent intent = new Intent(context, ProfileActivity.class);
+//                intent.putExtra(POST_ID, post.get(position).getPostid());
+//                intent.putExtra(profile_key, post.get(position).getUserid());
+//                context.startActivity(intent);
+                ProfileActivity.incommingPost = post.get(position);
+                ProfileActivity.refresh(context);
             }
         });
     }

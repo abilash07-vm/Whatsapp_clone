@@ -1,15 +1,24 @@
 package com.example.whatsappclone.fragments;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,6 +28,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.Model.CompletePostModel;
 import com.example.whatsappclone.Model.Contact;
 import com.example.whatsappclone.Model.PostModel;
@@ -42,6 +52,7 @@ import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,9 +63,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static android.app.Activity.RESULT_OK;
-import static com.example.whatsappclone.MainActivity.btn;
 import static com.example.whatsappclone.MainActivity.currentState;
 import static com.example.whatsappclone.MainActivity.parent;
+import static com.example.whatsappclone.MainActivity.postcount;
 import static com.example.whatsappclone.settings.SettingsActivity.GALLERY_REQUEST_CODE;
 import static com.example.whatsappclone.settings.SettingsActivity.SETTINGS_REQUEST_CODE;
 import static com.example.whatsappclone.settings.SettingsActivity.STORAGE_PERMISSION_CODE;
@@ -74,7 +85,9 @@ public class PostFragment extends Fragment {
     private ArrayList<CompletePostModel> nonDuplicateposts;
     private ArrayList<String> ids;
     private PostAdaptor adaptor;
-    private Intent imgdata;
+    public static ProgressBar progressBar;
+    private Uri uri;
+    private TextView nopost;
 
     @Nullable
     @Override
@@ -93,26 +106,63 @@ public class PostFragment extends Fragment {
         return view;
     }
 
+    public static Bitmap loadFromUri(Uri photoUri, Activity activity) {
+        Bitmap image = null;
+        try {
+            // check version of Android on device
+            if (Build.VERSION.SDK_INT > 27) {
+                // on newer versions of Android, use the new decodeBitmap method
+                ImageDecoder.Source source = ImageDecoder.createSource(activity.getContentResolver(), photoUri);
+                image = ImageDecoder.decodeBitmap(source);
+            } else {
+                // support older versions of Android by using getBitmap
+                image = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), photoUri);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return image;
+    }
+
+    public static ArrayList<CompletePostModel> sortByTimeStamp(ArrayList<CompletePostModel> arr) {
+        Collections.sort(arr, new Comparator<CompletePostModel>() {
+            @Override
+            public int compare(CompletePostModel o1, CompletePostModel o2) {
+                if (o2.getTimestamp() > o1.getTimestamp()) {
+                    return 1;
+                } else if (o2.getTimestamp() < o1.getTimestamp()) {
+                    return -1;
+                }
+                return 0;
+            }
+        });
+        return arr;
+    }
+
     private void openGallery() {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent cameraIntent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(cameraIntent, GALLERY_REQUEST_CODE);
         } else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission_group.STORAGE)) {
-                Snackbar.make(parent, "This Permission is essential to Access Gallery", Snackbar.LENGTH_INDEFINITE)
-                        .setAction("Grant", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Intent intent = new Intent();
-                                intent.setData(Uri.parse("package:" + getActivity().getPackageName()));
-                                startActivityForResult(intent, SETTINGS_REQUEST_CODE);
-                            }
-                        })
-                        .show();
+                showSnackBar();
             } else {
                 ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
             }
         }
+    }
+
+    private void showSnackBar() {
+        Snackbar.make(parent, "This Permission is essential to Access Gallery", Snackbar.LENGTH_INDEFINITE)
+                .setAction("Grant", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent();
+                        intent.setData(Uri.parse("package:" + getActivity().getPackageName()));
+                        startActivityForResult(intent, SETTINGS_REQUEST_CODE);
+                    }
+                })
+                .show();
     }
 
     @Override
@@ -131,7 +181,22 @@ public class PostFragment extends Fragment {
             case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                 if (resultCode == RESULT_OK) {
                     Log.d(TAG, "onActivityResult: post uploading...");
-                    uploadFileAndUpdateState(imgdata);
+                    View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_post, null);
+                    ImageView postImg = view.findViewById(R.id.postImg);
+                    final EditText caption = view.findViewById(R.id.txtcaption);
+                    final CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                    uri = result.getUri();
+                    postImg.setImageBitmap(loadFromUri(uri, getActivity()));
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                            .setView(view)
+                            .setPositiveButton("Post", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    txtcaption = caption.getText().toString();
+                                    uploadFileAndUpdateState();
+                                }
+                            });
+                    builder.create().show();
 
                 }
                 break;
@@ -140,17 +205,30 @@ public class PostFragment extends Fragment {
         }
     }
 
-    private void uploadFileAndUpdateState(Intent data) {
-        final CropImage.ActivityResult result = CropImage.getActivityResult(data);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case STORAGE_PERMISSION_CODE:
+                openGallery();
+                break;
+            default:
+                break;
+
+        }
+    }
+
+    private void uploadFileAndUpdateState() {
         userRef.child(currentUser).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 final PostStatus contact = snapshot.getValue(PostStatus.class);
                 contact.setPostcount(contact.getPostcount() + 1);
+                progressBar.show(getActivity().getSupportFragmentManager(), "uploading");
                 if (snapshot.exists()) {
                     Log.d(TAG, "onDataChange: post exist" + contact.toString());
                     final StorageReference fileRef = fileImgRef.child(currentUser + "post" + contact.getPostcount() + ".jpg");
-                    fileRef.putFile(result.getUri()).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    fileRef.putFile(uri).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                             if (task.isSuccessful()) {
@@ -169,6 +247,7 @@ public class PostFragment extends Fragment {
                                                         map.put("postcount", contact.getPostcount());
                                                         userRef.child(currentUser).updateChildren(map);
                                                         Toast.makeText(getActivity(), "posted", Toast.LENGTH_SHORT).show();
+                                                        progressBar.dismiss();
                                                     }
                                                 }
                                             });
@@ -193,24 +272,12 @@ public class PostFragment extends Fragment {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case STORAGE_PERMISSION_CODE:
-                openGallery();
-                break;
-            default:
-                break;
-
-        }
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
         if (currentUser != null) {
+            progressBar.show(getActivity().getSupportFragmentManager(), "postFragment");
+            showProgressBar();
             currentState("online");
-            btn.setVisibility(View.GONE);
             allContact.add(currentUser);
             contactRef.child(currentUser).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -228,7 +295,11 @@ public class PostFragment extends Fragment {
 
                 }
             });
-
+            if (nonDuplicateposts.size() == 0) {
+                nopost.setVisibility(View.VISIBLE);
+            } else {
+                nopost.setVisibility(View.GONE);
+            }
         }
 
     }
@@ -237,6 +308,30 @@ public class PostFragment extends Fragment {
     public void onStop() {
         super.onStop();
         nonDuplicateposts.clear();
+    }
+
+    private void showProgressBar() {
+//        if(!isNetworkConnected()){
+//            Log.d(TAG, "showProgressBar: "+"Network Not Available");
+//            progressBar.dismiss();
+//            return;
+//        }
+        try {
+            progressBar.show(getActivity().getSupportFragmentManager(), "post");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+//            AlertDialog.Builder builder=new AlertDialog.Builder(getActivity())
+//                    .setTitle("No Internet")
+//                    .setMessage("Connect To sync")
+//                    .setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface dialog, int which) {
+//
+//                        }
+//                    });
+//            builder.create().show();
+        }
     }
 
     private void collectAllPost() {
@@ -254,11 +349,13 @@ public class PostFragment extends Fragment {
 
                 }
             });
-
+            final ArrayList<Integer> postcountForProgress = new ArrayList<>();
             postRef.child(i).addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                     getAllPost(snapshot, "childAdded");
+                    postcount.setVisibility(View.GONE);
+                    postcountForProgress.add(1);
                 }
 
                 @Override
@@ -281,6 +378,10 @@ public class PostFragment extends Fragment {
 
                 }
             });
+            if (postcountForProgress.size() == 0) {
+                progressBar.dismiss();
+                postcount.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -298,13 +399,13 @@ public class PostFragment extends Fragment {
             if (!nonDuplicateposts.contains(model)) {
                 nonDuplicateposts.add(model);
             }
-            Collections.sort(nonDuplicateposts, new Comparator<CompletePostModel>() {
-                @Override
-                public int compare(CompletePostModel o1, CompletePostModel o2) {
-                    return (int) (o2.getTimestamp() - o1.getTimestamp());
-                }
-            });
+            sortByTimeStamp(nonDuplicateposts);
+            nopost.setVisibility(View.GONE);
             adaptor.setPosts(nonDuplicateposts);
+
+            if (allContact.size() != 0) {
+                progressBar.dismiss();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -315,7 +416,6 @@ public class PostFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        btn.setVisibility(View.VISIBLE);
         if (currentUser != null)
             currentState("offline");
     }
@@ -331,6 +431,8 @@ public class PostFragment extends Fragment {
         auth = FirebaseAuth.getInstance();
         postRecyView = view.findViewById(R.id.postRecyView);
         btnAddPost = view.findViewById(R.id.addPost);
+        nopost = view.findViewById(R.id.txtischatAvailable);
+        progressBar = new ProgressBar();
         if (auth.getCurrentUser() != null) {
             currentUser = auth.getCurrentUser().getUid();
             fileImgRef = FirebaseStorage.getInstance().getReference().child("Post");

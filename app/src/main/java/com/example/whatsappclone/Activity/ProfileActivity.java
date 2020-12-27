@@ -1,5 +1,6 @@
 package com.example.whatsappclone.Activity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import com.example.whatsappclone.Model.CompletePostModel;
 import com.example.whatsappclone.R;
 import com.example.whatsappclone.adaptors.PhotoAdaptor;
 import com.example.whatsappclone.adaptors.PostAdaptor;
+import com.example.whatsappclone.settings.SettingsActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,17 +53,41 @@ public class ProfileActivity extends AppCompatActivity {
     public static final String POST_ID = "postid";
     private CircleImageView profileImage;
     private DatabaseReference userRef, chatRef, contactRef, rootRef, postRef;
-    private Button btnRequest, btnCancel;
+    public static CompletePostModel incommingPost;
     private String reciever, sender;
     private FirebaseAuth auth;
     private TextView profileName, profileStatus, postCount;
-    private RecyclerView postrecyView;
+    private static RecyclerView postrecyView;
     private PhotoAdaptor photoAdaptor;
-    private PostAdaptor postAdaptor;
+    private static PostAdaptor postAdaptor;
     private String incommingPostId;
-    private CompletePostModel incommingPost;
-    private ArrayList<CompletePostModel> allPost;
+    private static ArrayList<CompletePostModel> allPost;
+    private Button btnRequest, btnCancel, btnEdit;
 
+    public static void refresh(Context context) {
+        postrecyView.setLayoutManager(new LinearLayoutManager(context));
+        postrecyView.setAdapter(postAdaptor);
+        postAdaptor.setPosts(allPost);
+        int position = allPost.indexOf(incommingPost);
+        postrecyView.smoothScrollToPosition(position);
+
+    }
+
+    private void cancelRequset() {
+        chatRef.child(sender).child(reciever).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    chatRef.child(reciever).child(sender).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Log.d(TAG, "onComplete: Removed Request");
+                        }
+                    });
+                }
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,13 +95,20 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         initViews();
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         if (intent != null) {
             String user = intent.getStringExtra(profile_key);
             if (user != null) {
                 userRef = userRef.child(user);
                 reciever = userRef.getKey();
                 retrieveAllDetails();
+                btnEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent1 = new Intent(ProfileActivity.this, SettingsActivity.class);
+                        startActivity(intent1);
+                    }
+                });
                 btnRequest.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -164,25 +197,9 @@ public class ProfileActivity extends AppCompatActivity {
                     }
                 });
             }
-            incommingPostId = intent.getStringExtra(POST_ID);
+//            incommingPostId = intent.getStringExtra(POST_ID);
 
         }
-    }
-
-    private void cancelRequset() {
-        chatRef.child(sender).child(reciever).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    chatRef.child(reciever).child(sender).child("request_status").removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            Log.d(TAG, "onComplete: Removed Request");
-                        }
-                    });
-                }
-            }
-        });
     }
 
     @Override
@@ -220,7 +237,9 @@ public class ProfileActivity extends AppCompatActivity {
 
         if (reciever.equals(sender)) {
             btnRequest.setVisibility(View.GONE);
+            btnEdit.setVisibility(View.VISIBLE);
         } else {
+            btnEdit.setVisibility(View.GONE);
             chatRef.child(sender).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -264,19 +283,25 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
+
     private void getAllPost(DataSnapshot snapshot, String type) {
         try {
             CompletePostModel model = snapshot.getValue(CompletePostModel.class);
             model.addUserdata(contactDetails.get(model.getUserid()));
             Log.d(TAG, "getAllPost: " + type + "  " + model.toString());
-            if (incommingPostId != null) {
-                for (CompletePostModel i : allPost) {
-                    if (i.getPostid().equals(incommingPostId)) {
-                        incommingPost = i;
-                        break;
-                    }
-                }
-            }
+//            if (incommingPostId != null) {
+//                for (CompletePostModel i : allPost) {
+//                    if (i.getPostid().equals(incommingPostId)) {
+//                        incommingPost = i;
+//                        break;
+//                    }
+//                }
+//            }
             for (CompletePostModel i : allPost) {
                 if (i.getPostid().equals(model.getPostid())) {
                     allPost.remove(i);
@@ -297,7 +322,7 @@ public class ProfileActivity extends AppCompatActivity {
                 postrecyView.setAdapter(postAdaptor);
                 postAdaptor.setPosts(allPost);
                 int position = allPost.indexOf(incommingPost);
-                postrecyView.smoothScrollToPosition(position - 1);
+                postrecyView.smoothScrollToPosition(position);
                 Log.d(TAG, "getAllPost: " + allPost.indexOf(incommingPost));
             } else {
                 postrecyView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -375,6 +400,7 @@ public class ProfileActivity extends AppCompatActivity {
         chatRef = rootRef.child("ChatRequest");
         contactRef = rootRef.child("Contact");
         postRef = rootRef.child("Post");
+        btnEdit = findViewById(R.id.btnedit);
         profileImage = findViewById(R.id.profile_Image);
         profileName = findViewById(R.id.profile_Name);
         profileStatus = findViewById(R.id.profile_Status);
@@ -400,8 +426,10 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        incommingPost = null;
         if (sender != null) {
             currentState("offline");
+
         }
     }
 

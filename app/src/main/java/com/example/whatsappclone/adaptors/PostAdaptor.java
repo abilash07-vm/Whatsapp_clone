@@ -2,6 +2,8 @@ package com.example.whatsappclone.adaptors;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,15 +17,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.Activity.CommentActivity;
 import com.example.whatsappclone.Activity.LikesActivity;
 import com.example.whatsappclone.Activity.ProfileActivity;
+import com.example.whatsappclone.Model.CommentModel;
 import com.example.whatsappclone.Model.CompletePostModel;
 import com.example.whatsappclone.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +49,7 @@ public class PostAdaptor extends RecyclerView.Adapter<PostAdaptor.ViewHolder> {
     private Context context;
     private String currentUserId = FirebaseAuth.getInstance().getUid();
     private DatabaseReference postRef = FirebaseDatabase.getInstance().getReference().child("Post");
+    private DatabaseReference commentRef = FirebaseDatabase.getInstance().getReference().child("Comment");
 
     public PostAdaptor(Context context) {
         this.context = context;
@@ -68,9 +76,9 @@ public class PostAdaptor extends RecyclerView.Adapter<PostAdaptor.ViewHolder> {
                 likedids.addAll(Arrays.asList(post.getLikedby().split(",")));
             }
             if (likedids.contains(currentUserId)) {
-                holder.likes.setImageResource(R.drawable.like);
+                holder.likes.setImageResource(R.drawable.ic_like);
             } else {
-                holder.likes.setImageResource(R.drawable.unlike);
+                holder.likes.setImageResource(R.drawable.ic_unlike);
             }
             holder.profilename.setText(post.getName());
             holder.likesCount.setText(String.valueOf(post.getLikesCount()) + " likes");
@@ -168,6 +176,7 @@ public class PostAdaptor extends RecyclerView.Adapter<PostAdaptor.ViewHolder> {
                 holder.caption.setText(post.getCaption());
             } else {
                 if (post.getUserid().equals(currentUserId)) {
+                    holder.caption.setVisibility(View.VISIBLE);
                     holder.caption.setText("No Caption");
                 } else {
                     holder.caption.setVisibility(View.GONE);
@@ -185,9 +194,57 @@ public class PostAdaptor extends RecyclerView.Adapter<PostAdaptor.ViewHolder> {
                         holder.captionBox.setVisibility(View.GONE);
                         holder.caption.setVisibility(View.VISIBLE);
                         holder.caption.setText(post.getCaption());
-                        holder.btnEditCaption.setText("Update");
+                        holder.btnEditCaption.setText("EDIT");
                         postRef.child(post.getUserid()).child(post.getPostid()).child("caption").setValue(holder.captionBox.getText().toString());
                     }
+                }
+            });
+            holder.commentBox.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    if (s.toString().length() == 0 || s.toString().equals(" ")) {
+                        holder.btnAddComment.setVisibility(View.GONE);
+                    } else {
+                        holder.btnAddComment.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (s.toString().length() == 0 || s.toString().equals(" ")) {
+                        holder.btnAddComment.setVisibility(View.GONE);
+                    } else {
+                        holder.btnAddComment.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
+            holder.btnAddComment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String txtComment = holder.commentBox.getText().toString();
+                    String key = commentRef.child(post.getPostid()).push().getKey();
+                    CommentModel comment = new CommentModel(currentUserId, txtComment, key, new Timestamp(System.currentTimeMillis()).getTime());
+                    commentRef.child(post.getPostid()).child(key).setValue(comment).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                holder.commentBox.setText("");
+                            }
+                        }
+                    });
+                }
+            });
+            holder.comment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(context, CommentActivity.class);
+                    intent.putExtra("postid", post.getPostid());
+                    context.startActivity(intent);
                 }
             });
 

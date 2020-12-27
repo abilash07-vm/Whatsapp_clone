@@ -6,6 +6,7 @@
     <ImageView
         android:id="@+id/pic"
         android:layout_width="130dp"
-        android:layout_height="200dp" />
+        android:layout_height="130dp"
+        android:src="@drawable/profile_image" />
 
 </RelativeLayout>

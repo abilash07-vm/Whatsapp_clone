@@ -13,18 +13,20 @@
         android:gravity="center"
         android:maxWidth="200dp"
         android:padding="10dp"
+        android:minWidth="100dp"
         android:text="reciewer"
         android:textSize="20sp"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/receiver_img"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@drawable/profile_image"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <TextView
+        android:minWidth="100dp"
         android:id="@+id/sender_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -35,6 +37,31 @@
         android:padding="10dp"
         android:text="sender"
         android:textSize="20sp"
+        android:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/msgSent"
+        android:layout_width="wrap_content"
+        android:layout_height="14dp"
+        android:layout_below="@+id/sender_msg"
+        android:layout_marginLeft="-14dp"
+        android:layout_marginTop="-18dp"
+        android:layout_marginBottom="-10dp"
+        android:layout_toRightOf="@+id/sender_msg"
+        android:src="@drawable/ic_tick" />
+
+    <TextView
+        android:id="@+id/read"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/sender_msg"
+        android:layout_marginLeft="-14dp"
+        android:layout_marginTop="-24dp"
+        android:layout_marginBottom="-10dp"
+        android:layout_toRightOf="@+id/sender_msg"
+        android:text="R"
+        android:textSize="15sp"
         android:visibility="gone" />
+
 
 </RelativeLayout>

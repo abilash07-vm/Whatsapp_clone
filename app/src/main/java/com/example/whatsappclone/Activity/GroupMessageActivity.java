@@ -6,14 +6,12 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.Model.GroupChatModel;
 import com.example.whatsappclone.Model.PrivateMessageModel;
 import com.example.whatsappclone.R;
@@ -47,6 +46,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.example.whatsappclone.Activity.GroupInfoActivity.grpName_key;
 import static com.example.whatsappclone.MainActivity.currentState;
+import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class GroupMessageActivity extends AppCompatActivity {
     private static final String TAG = "GroupMessageActivity";
@@ -58,7 +58,7 @@ public class GroupMessageActivity extends AppCompatActivity {
     private DatabaseReference grpRef, userRef, grpMessageKeyRef;
     private FirebaseAuth firebaseAuth;
     private String currUserName, currUserid;
-    private String txtgrpName, message, currTime, currDate, grpMessageKey;
+    private String txtgrpid, message, currTime, currDate, grpMessageKey;
     private RecyclerView messageRecyview;
     private PrivateMessageAdaptor adaptor;
     private CircleImageView img;
@@ -71,15 +71,28 @@ public class GroupMessageActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent != null) {
-            txtgrpName = intent.getStringExtra("name");
-            if (txtgrpName != null) {
+            txtgrpid = intent.getStringExtra("name");
+            if (txtgrpid != null) {
                 initViews();
-                grpName.setText(txtgrpName);
+                grpRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String txtgrpName = snapshot.child("grpname").getValue().toString();
+                        if (txtgrpName != null) {
+                            grpName.setText(txtgrpName);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
                 grpName.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent1 = new Intent(GroupMessageActivity.this, GroupInfoActivity.class);
-                        intent1.putExtra(grpName_key, grpName.getText());
+                        intent1.putExtra(grpName_key, txtgrpid);
                         startActivity(intent1);
                     }
                 });
@@ -118,7 +131,8 @@ public class GroupMessageActivity extends AppCompatActivity {
                 btnBack.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onBackPressed();
+                        Intent intent = new Intent(GroupMessageActivity.this, MainActivity.class);
+                        startActivity(intent);
                     }
                 });
                 btnSend.setOnClickListener(new View.OnClickListener() {
@@ -164,7 +178,8 @@ public class GroupMessageActivity extends AppCompatActivity {
                 } else {
                     final Map<String, Object> stateMap = new HashMap<>();
                     stateMap.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
-                    stateMap.put("name", txtgrpName);
+                    stateMap.put("name", grpName.getText().toString());
+                    stateMap.put("lastMessage", message);
                     grpRef.child("image").addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -190,8 +205,10 @@ public class GroupMessageActivity extends AppCompatActivity {
                                     Map notificationMap = new HashMap();
                                     notificationMap.put("from", currUserid);
                                     notificationMap.put("message", message);
+                                    notificationMap.put("lastMessage", message);
+                                    notificationMap.put("grpid", txtgrpid);
                                     notificationMap.put("type", "groupmessage");
-                                    notificationMap.put("grpName", txtgrpName);
+                                    notificationMap.put("grpName", grpName.getText().toString());
                                     FirebaseDatabase.getInstance().getReference().child("GroupNotifications").child(snap.getKey()).push().updateChildren(notificationMap).addOnCompleteListener(new OnCompleteListener() {
                                         @Override
                                         public void onComplete(@NonNull Task task) {
@@ -199,8 +216,8 @@ public class GroupMessageActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
-                                Log.d(TAG, "onDataChange: members " + snap.getKey() + " " + txtgrpName);
-                                FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpName).addValueEventListener(new ValueEventListener() {
+                                Log.d(TAG, "onDataChange: members " + snap.getKey() + " " + txtgrpid);
+                                FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpid).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         if (snapshot.hasChild("msgcount")) {
@@ -213,7 +230,7 @@ public class GroupMessageActivity extends AppCompatActivity {
 
                                                 stateMap.put("msgcount", 0);
                                             }
-                                            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpName).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpid).updateChildren(stateMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if (task.isSuccessful()) {
@@ -221,7 +238,7 @@ public class GroupMessageActivity extends AppCompatActivity {
                                                     }
                                                 }
                                             });
-                                            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpName).removeEventListener(this);
+                                            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(snap.getKey()).child(txtgrpid).removeEventListener(this);
                                         }
                                     }
 
@@ -249,11 +266,17 @@ public class GroupMessageActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        messages.clear();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        if (txtgrpName != null) {
+        if (txtgrpid != null) {
             currentState("online");
-            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(currUserid).child(txtgrpName).child("msgcount").setValue(0);
+            FirebaseDatabase.getInstance().getReference().child("UserGroup").child(currUserid).child(txtgrpid).child("msgcount").setValue(0);
             grpRef.child("Messages").addChildEventListener(new ChildEventListener() {
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -319,8 +342,8 @@ public class GroupMessageActivity extends AppCompatActivity {
         txtMessage = findViewById(R.id.txtMessage);
         img = findViewById(R.id.Image);
 
-        if (txtgrpName != null)
-            grpRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(txtgrpName);
+        if (txtgrpid != null)
+            grpRef = FirebaseDatabase.getInstance().getReference().child("Groups").child(txtgrpid);
         adaptor = new PrivateMessageAdaptor(GroupMessageActivity.this);
         messageRecyview.setAdapter(adaptor);
         userRef.child(currUserid).addValueEventListener(new ValueEventListener() {
@@ -355,10 +378,4 @@ public class GroupMessageActivity extends AppCompatActivity {
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.menu,menu);
-        return true;
-    }
 }

@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import static com.example.whatsappclone.MainActivity.btn;
+import static com.example.whatsappclone.MainActivity.chatcount;
 import static com.example.whatsappclone.MainActivity.currentState;
 
 public class ChatsFragment extends Fragment {
@@ -37,6 +38,7 @@ public class ChatsFragment extends Fragment {
     private RecyclerView chatsRecyView;
     private DatabaseReference contactRef, userRef, userStateRef;
     private ArrayList<ChatsModel> chats;
+    private TextView txtShowNotAvailable;
     private FirebaseAuth auth;
     private ChatsAdaptor adaptor;
     private String currentUser;
@@ -53,7 +55,6 @@ public class ChatsFragment extends Fragment {
     public void onStart() {
         super.onStart();
         if (currentUser != null) {
-            btn.setVisibility(View.VISIBLE);
             currentState("online");
             userStateRef.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -69,7 +70,15 @@ public class ChatsFragment extends Fragment {
                                 return o1.getTimestamp() < o2.getTimestamp() ? 1 : -1;
                             }
                         });
+                        txtShowNotAvailable.setVisibility(View.GONE);
                         adaptor.setChats(chats);
+                        int count = getCount();
+                        if (count == 0) {
+                            chatcount.setVisibility(View.GONE);
+                        } else {
+                            chatcount.setVisibility(View.VISIBLE);
+                            chatcount.setText(String.valueOf(count));
+                        }
                     }
                 }
 
@@ -78,6 +87,12 @@ public class ChatsFragment extends Fragment {
 
                 }
             });
+            if (chats.size() == 0) {
+                txtShowNotAvailable.setText("No Chat Avialable Add friend \n by Menu->Find Friends");
+                txtShowNotAvailable.setVisibility(View.VISIBLE);
+            } else {
+                txtShowNotAvailable.setVisibility(View.GONE);
+            }
         }
 
     }
@@ -89,6 +104,16 @@ public class ChatsFragment extends Fragment {
             currentState("offline");
     }
 
+    private int getCount() {
+        int c = 0;
+        for (ChatsModel i : chats) {
+            if (i.getMsgcount() > 0) {
+                c++;
+            }
+        }
+        return c;
+    }
+
     private void initViews() {
         chatsRecyView = view.findViewById(R.id.recyView);
         chatsRecyView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -97,6 +122,7 @@ public class ChatsFragment extends Fragment {
         userRef = FirebaseDatabase.getInstance().getReference().child("User");
         auth = FirebaseAuth.getInstance();
         chats = new ArrayList<>();
+        txtShowNotAvailable = view.findViewById(R.id.txtischatAvailable);
         if (auth.getCurrentUser() != null) {
             currentUser = auth.getCurrentUser().getUid();
             contactRef = FirebaseDatabase.getInstance().getReference().child("Contact").child(currentUser);

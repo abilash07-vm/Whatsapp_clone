@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
 import static com.example.whatsappclone.adaptors.ChatsAdaptor.isValidContextForGlide;
 
 public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAdaptor.ViewHolder> {
@@ -58,7 +60,6 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
             holder.receivermsg.setVisibility(View.VISIBLE);
             holder.sendermsg.setVisibility(View.GONE);
             holder.receivermsg.setText(message.getMessage());
-
             userRef.child(message.getFrom()).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -92,14 +93,18 @@ public class PrivateMessageAdaptor extends RecyclerView.Adapter<PrivateMessageAd
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView receivermsg, sendermsg;
+        private TextView receivermsg, sendermsg, msgRead;
         private CircleImageView receiverImg;
+        private ImageView msgsent;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             receivermsg = itemView.findViewById(R.id.receiver_msg);
             sendermsg = itemView.findViewById(R.id.sender_msg);
             receiverImg = itemView.findViewById(R.id.receiver_img);
+            msgRead = itemView.findViewById(R.id.read);
+            msgsent = itemView.findViewById(R.id.msgSent);
         }
     }
 }

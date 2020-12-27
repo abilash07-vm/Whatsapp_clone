@@ -14,6 +14,10 @@ public class ChatsModel {
         this.from = from;
     }
 
+    public ChatsModel(String from) {
+        this.from = from;
+    }
+
     public ChatsModel(String from, String lastmessage, int msgcount, long timestamp) {
         this.from = from;
         this.lastmessage = lastmessage;

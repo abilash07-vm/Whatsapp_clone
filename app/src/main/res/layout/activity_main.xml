@@ -17,7 +17,10 @@
             android:layout_width="match_parent"
             android:layout_height="70dp"
             app:menu="@menu/menu"
-            app:title="@string/title_activity_main" />
+            app:title="@string/title_activity_main"
+            app:titleTextColor="#fff">
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
@@ -40,7 +43,9 @@
                 android:id="@+id/status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status" />
+                android:text="Status">
+
+            </com.google.android.material.tabs.TabItem>
 
             <com.google.android.material.tabs.TabItem
                 android:id="@+id/group"
@@ -49,6 +54,7 @@
                 android:text="Group" />
         </com.google.android.material.tabs.TabLayout>
     </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/container"

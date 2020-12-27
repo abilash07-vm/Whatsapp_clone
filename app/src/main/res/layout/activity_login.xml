@@ -1,90 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="20dp"
     tools:context=".loginandsignup.LoginActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="50dp"
-        android:text="Welcome to Whatsapp , login to continue."
-        android:textColor="@color/colorPrimary"
-        android:textSize="20sp" />
-
-    <TextView
-        android:id="@+id/invalidemail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Invalid email"
-        android:textColor="#EC1B09"
-        android:textSize="20sp"
-        android:visibility="gone" />
-
-    <EditText
-        android:id="@+id/loginemail"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/loginpassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:hint="Password"
-        android:inputType="textPassword" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Welcome to TechChats , login to continue."
+            android:textColor="@color/colorPrimary"
+            android:textSize="20sp" />
 
-    <TextView
-        android:id="@+id/forgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Forgot Password ?"
-        android:textColor="@color/colorPrimary" />
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/icon" />
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Login" />
 
-    <TextView
-        android:id="@+id/signUpNewAccount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Sign up New account"
-        android:textColor="@color/colorPrimary" />
+        <TextView
+            android:id="@+id/invalidemail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Invalid email"
+            android:textColor="#EC1B09"
+            android:textSize="20sp"
+            android:visibility="gone" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="or login using Phone"
-        android:textColor="@color/colorPrimary" />
+        <EditText
+            android:id="@+id/loginemail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email"
+            android:inputType="textEmailAddress" />
 
-    <Button
-        android:id="@+id/btnLoginUsingPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Login using phone" />
+        <EditText
+            android:id="@+id/loginpassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:hint="Password"
+            android:inputType="textPassword" />
 
-    <Button
-        android:id="@+id/btnLoginUsingGoogle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Login using Google" />
+        <TextView
+            android:id="@+id/forgotPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Forgot Password ?"
+            android:textColor="@color/colorPrimary" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Login" />
+
+        <TextView
+            android:id="@+id/signUpNewAccount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:text="Dont have account,\nclick here to Sign up New account"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20sp" />
+
+        <!--    <TextView-->
+        <!--        android:layout_width="wrap_content"-->
+        <!--        android:layout_height="wrap_content"-->
+        <!--        android:layout_gravity="center"-->
+        <!--        android:layout_marginTop="20dp"-->
+        <!--        android:text="or login using Phone"-->
+        <!--        android:textColor="@color/colorPrimary" />-->
+
+        <Button
+            android:id="@+id/btnLoginUsingPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Login using phone"
+            android:visibility="gone" />
+    </LinearLayout>
+
+
+</androidx.core.widget.NestedScrollView>
