@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/radioGrp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp">
+
+            <RadioButton
+                android:id="@+id/nudity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nudity or sexual activity"
+                android:textSize="25sp" />
+
+            <RadioButton
+                android:id="@+id/violence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="violence activity"
+                android:textSize="25sp" />
+
+            <RadioButton
+                android:id="@+id/selfinjury"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Self injury"
+                android:textSize="25sp" />
+
+            <RadioButton
+                android:id="@+id/falseInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="False Information"
+                android:textSize="25sp" />
+
+            <RadioButton
+                android:id="@+id/others"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Others"
+                android:textSize="25sp" />
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/othersBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:hint="If others type here..."
+            android:visibility="gone" />
+    </LinearLayout>
+
+
+</RelativeLayout>

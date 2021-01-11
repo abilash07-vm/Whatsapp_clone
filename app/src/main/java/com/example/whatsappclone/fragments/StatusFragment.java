@@ -454,24 +454,21 @@ public class StatusFragment extends Fragment {
 
             String s = "";
             Set<String> seenSet = new HashSet<>();
+            seenSet.add(currentUserId);
             try {
-                seenSet.addAll(Arrays.asList(status.getSeenBy().split(",")));
-                int z = 0;
-                for (String i : seenSet) {
-                    s += i;
-                    if (z != seenSet.size() - 1) {
+                if (status.getSeenBy() != null) {
+                    seenSet.addAll(Arrays.asList(status.getSeenBy().split(",")));
+                    for (String i : seenSet) {
+                        s += i;
                         s += ",";
                     }
-                    z++;
                 }
+                s = s.substring(0, s.length() - 1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (!seenSet.contains(currentUserId)) {
-                status.setViewCount(status.getViewCount() + 1);
-                s += currentUserId;
-            }
             status.setSeenBy(s);
+            status.setViewCount(seenSet.size());
 
             statusRef.child(status.getUserid()).child(status.getStatusid()).setValue(status);
 

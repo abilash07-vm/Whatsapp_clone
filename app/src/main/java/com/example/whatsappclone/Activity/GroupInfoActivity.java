@@ -405,6 +405,12 @@ public class GroupInfoActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        currentState("offline");
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (userid != null) {

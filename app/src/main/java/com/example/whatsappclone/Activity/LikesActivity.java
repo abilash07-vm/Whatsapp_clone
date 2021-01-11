@@ -20,6 +20,8 @@ import com.example.whatsappclone.fragments.PostFragment;
 
 import java.util.ArrayList;
 
+import static com.example.whatsappclone.MainActivity.currentState;
+
 public class LikesActivity extends AppCompatActivity {
     private static final String TAG = "LikesActivity";
     private ImageView btnBack, btnSearch;
@@ -69,6 +71,25 @@ public class LikesActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        currentState("offline");
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        currentState("offline");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        currentState("online");
     }
 
     private void showSuggestion(String s) {

@@ -117,7 +117,26 @@ public class ProfileActivity extends AppCompatActivity {
                         } else if (btnRequest.getText().equals("Cancel Request")) {
                             btnCancel.setVisibility(View.GONE);
                             cancelRequset();
-                        } else if (btnRequest.getText().equals("Accept request")) {
+                        } else if (btnRequest.getText().equals("UnBlock")) {
+                            contactRef.child(sender).child(reciever).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        contactRef.child(reciever).child(sender).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if (task.isSuccessful()) {
+                                                    Toast.makeText(ProfileActivity.this, "Unblocked", Toast.LENGTH_SHORT).show();
+                                                    btnRequest.setText("friends");
+                                                    btnCancel.setText("Block");
+                                                    btnCancel.setVisibility(View.VISIBLE);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        } else if (btnRequest.getText().equals("Accept Request")) {
                             contactRef.child(sender).child(reciever).child("contact").setValue("saved").addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -193,7 +212,40 @@ public class ProfileActivity extends AppCompatActivity {
                 btnCancel.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        cancelRequset();
+                        if (btnCancel.getText().toString().equals("Block")) {
+                            if (sender.equals(reciever)) {
+                                Toast.makeText(ProfileActivity.this, "You cannot block yourself", Toast.LENGTH_SHORT).show();
+                            }
+                            FirebaseDatabase.getInstance().getReference().child("Contact").child(sender).child(reciever).child("contact").addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (snapshot.exists()) {
+                                        if (snapshot.getValue().equals("saved")) {
+                                            snapshot.getRef().setValue(sender);
+                                            FirebaseDatabase.getInstance().getReference().child("Contact").child(reciever).child(sender).child("contact").setValue(sender).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        btnRequest.setText("UnBlock");
+                                                        btnCancel.setVisibility(View.GONE);
+                                                        Toast.makeText(ProfileActivity.this, "Blocked Sucessfully", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            Toast.makeText(ProfileActivity.this, "Already Blocked", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                    FirebaseDatabase.getInstance().getReference().child("Contact").child(sender).child(reciever).child("contact").removeEventListener(this);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
+                        } else
+                            cancelRequset();
                     }
                 });
             }
@@ -205,7 +257,6 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        btnCancel.setVisibility(View.GONE);
         currentState("online");
 
         postRef.child(reciever).addChildEventListener(new ChildEventListener() {
@@ -234,6 +285,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             }
         });
+        btnRequest.setEnabled(true);
 
         if (reciever.equals(sender)) {
             btnRequest.setVisibility(View.GONE);
@@ -250,18 +302,29 @@ public class ProfileActivity extends AppCompatActivity {
                             btnCancel.setVisibility(View.GONE);
                             btnRequest.setText("Cancel Request");
                         } else if (status.equals("request_received")) {
-                            btnRequest.setText("Accept request");
+                            btnRequest.setText("Accept Request");
                             btnCancel.setVisibility(View.VISIBLE);
+                            btnCancel.setText("Reject");
                         }
                     } else {
-                        contactRef.child(sender).addListenerForSingleValueEvent(new ValueEventListener() {
+                        contactRef.child(sender).child(reciever).child("contact").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                if (snapshot.hasChild(reciever)) {
-                                    btnRequest.setText("Friends");
-                                    btnCancel.setVisibility(View.GONE);
-                                } else {
-                                    btnRequest.setText("Request");
+                                if (snapshot.exists()) {
+                                    String state = snapshot.getValue().toString();
+                                    if (state.equals("saved")) {
+                                        btnRequest.setText("Friends");
+                                        btnCancel.setText("Block");
+                                        btnCancel.setVisibility(View.VISIBLE);
+                                    } else {
+                                        btnCancel.setVisibility(View.GONE);
+                                        if (state.equals(sender)) {
+                                            btnRequest.setText("UnBlock");
+                                        } else {
+                                            btnRequest.setText("Blocked");
+                                            btnRequest.setEnabled(false);
+                                        }
+                                    }
                                 }
                             }
 

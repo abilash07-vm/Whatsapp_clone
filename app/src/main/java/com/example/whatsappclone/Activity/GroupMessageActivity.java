@@ -269,6 +269,7 @@ public class GroupMessageActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         messages.clear();
+        currentState("offline");
     }
 
     @Override
@@ -368,6 +369,7 @@ public class GroupMessageActivity extends AppCompatActivity {
             currentState("offline");
         }
     }
+
 
     @Override
     protected void onDestroy() {

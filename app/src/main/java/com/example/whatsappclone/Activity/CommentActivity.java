@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import static com.example.whatsappclone.MainActivity.currentState;
+
 public class CommentActivity extends AppCompatActivity {
     private static final String TAG = "CommentActivity";
     private DatabaseReference commentRef;
@@ -108,6 +110,20 @@ public class CommentActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         comments.clear();
+        currentState("offline");
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        currentState("offline");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        currentState("offline");
     }
 
     private void initViews() {

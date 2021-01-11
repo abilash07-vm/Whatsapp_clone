@@ -78,6 +78,23 @@ public class ContactActivity extends AppCompatActivity {
             protected void onBindViewHolder(@NonNull final contactViewHolder holder, int position, @NonNull final Contact model) {
                 final String key = getRef(position).getKey();
                 Log.d(TAG, "onBindViewHolder: " + key);
+                getRef(position).child("contact").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        if (snapshot.exists()) {
+                            if (snapshot.getValue().toString().equals("saved")) {
+                                holder.blocked.setVisibility(View.GONE);
+                            } else {
+                                holder.blocked.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
                 userRef.child(key).addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -154,6 +171,14 @@ public class ContactActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (currentUser != null) {
+            currentState("offline");
+        }
+    }
+
     public void currentState(String state) {
         Calendar calendar = Calendar.getInstance();
         String currentDate, currentTime;
@@ -176,7 +201,7 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     public static class contactViewHolder extends RecyclerView.ViewHolder {
-        public TextView name, status;
+        public TextView name, status, blocked;
         public ImageView image, online;
 
         public contactViewHolder(@NonNull View itemView) {
@@ -185,6 +210,8 @@ public class ContactActivity extends AppCompatActivity {
             status = itemView.findViewById(R.id.Status);
             image = itemView.findViewById(R.id.Image);
             online = itemView.findViewById(R.id.online);
+            blocked = itemView.findViewById(R.id.Admin);
+            blocked.setText("BLOCKED");
         }
     }
 

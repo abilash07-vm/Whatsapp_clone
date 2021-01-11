@@ -82,71 +82,73 @@ public class ChatsAdaptor extends RecyclerView.Adapter<ChatsAdaptor.ViewHolder> 
             }
         }
         Log.d(TAG, "onBindViewHolder: " + chats.get(position).toString());
-        FirebaseDatabase.getInstance().getReference().child("User").child(chats.get(position).getFrom()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.hasChild("name"))
-                    holder.name.setText(snapshot.child("name").getValue().toString());
-                String lastMessage = null;
-                if (type.equals("chat")) {
-                    lastMessage = chats.get(position).getLastmessage();
-                }
-                if (lastMessage != null) {
-                    holder.status.setVisibility(View.VISIBLE);
-                    holder.status.setText(lastMessage);
-                    holder.status.setTextColor(Color.rgb(0, 0, 0));
-                    holder.itemView.setBackgroundColor(Color.rgb(192, 192, 192));
-                } else {
-                    holder.status.setTextColor(Color.rgb(0, 0, 0));
-                    if (type.equals("friend")) {
-                        holder.status.setText(snapshot.child("status").getValue().toString());
+        if (chats.get(position).getFrom() != null) {
+            FirebaseDatabase.getInstance().getReference().child("User").child(chats.get(position).getFrom()).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.hasChild("name"))
+                        holder.name.setText(snapshot.child("name").getValue().toString());
+                    String lastMessage = null;
+                    if (type.equals("chat")) {
+                        lastMessage = chats.get(position).getLastmessage();
+                    }
+                    if (lastMessage != null) {
+                        holder.status.setVisibility(View.VISIBLE);
+                        holder.status.setText(lastMessage);
+                        holder.status.setTextColor(Color.rgb(0, 0, 0));
+                        holder.itemView.setBackgroundColor(Color.rgb(192, 192, 192));
                     } else {
-                        holder.status.setVisibility(View.GONE);
-                    }
-                }
-                if (snapshot.child("image").exists() && isValidContextForGlide(context)) {
-                    Glide.with(context)
-                            .asBitmap()
-                            .load(snapshot.child("image").getValue())
-                            .into(holder.image);
-                } else {
-                    holder.image.setImageResource(R.drawable.profile_image);
-                }
-                holder.image.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent1 = new Intent(context, ProfileActivity.class);
-                        intent1.putExtra(profile_key,chats.get(position).getFrom());
-                        context.startActivity(intent1);
-                    }
-                });
-                if (snapshot.hasChild("state") && snapshot.child("state").getValue().toString().equals("online") && type.equals("chat"))
-                    holder.online.setVisibility(View.VISIBLE);
-                else
-                    holder.online.setVisibility(View.GONE);
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                        holder.status.setTextColor(Color.rgb(0, 0, 0));
                         if (type.equals("friend")) {
-                            Intent intent = new Intent(context, ProfileActivity.class);
-                            intent.putExtra(profile_key, chats.get(position).getFrom());
-                            context.startActivity(intent);
+                            holder.status.setText(snapshot.child("status").getValue().toString());
                         } else {
-                            Intent intent = new Intent(context, PrivateMesaageActivity.class);
-                            intent.putExtra(message_key, chats.get(position).getFrom());
-                            Log.d(TAG, "onClick: " + chats.toString());
-                            context.startActivity(intent);
+                            holder.status.setVisibility(View.GONE);
                         }
                     }
-                });
+                    if (snapshot.child("image").exists() && isValidContextForGlide(context)) {
+                        Glide.with(context)
+                                .asBitmap()
+                                .load(snapshot.child("image").getValue())
+                                .into(holder.image);
+                    } else {
+                        holder.image.setImageResource(R.drawable.profile_image);
+                    }
+                    holder.image.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent1 = new Intent(context, ProfileActivity.class);
+                            intent1.putExtra(profile_key, chats.get(position).getFrom());
+                            context.startActivity(intent1);
+                        }
+                    });
+                    if (snapshot.hasChild("state") && snapshot.child("state").getValue().toString().equals("online") && type.equals("chat"))
+                        holder.online.setVisibility(View.VISIBLE);
+                    else
+                        holder.online.setVisibility(View.GONE);
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (type.equals("friend")) {
+                                Intent intent = new Intent(context, ProfileActivity.class);
+                                intent.putExtra(profile_key, chats.get(position).getFrom());
+                                context.startActivity(intent);
+                            } else {
+                                Intent intent = new Intent(context, PrivateMesaageActivity.class);
+                                intent.putExtra(message_key, chats.get(position).getFrom());
+                                Log.d(TAG, "onClick: " + chats.toString());
+                                context.startActivity(intent);
+                            }
+                        }
+                    });
 
-            }
+                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     @Override

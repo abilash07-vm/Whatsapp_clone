@@ -108,6 +108,12 @@ public class PrivateMesaageActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         messages.clear();
+        if (msgsenderKey != null) {
+            String senderRef = msgsenderKey + "/" + msgreceiverKey;
+            rootRef.child("MessageState").child(senderRef).child("msgcount").setValue(0);
+            rootRef.child("MessageState").child(senderRef).child("lastmessage").setValue(null);
+            currentState("offline");
+        }
     }
 
     @Override
@@ -115,6 +121,28 @@ public class PrivateMesaageActivity extends AppCompatActivity {
         super.onStart();
         if (msgreceiverKey != null) {
             currentState("online");
+
+            rootRef.child("Contact").child(msgsenderKey).child(msgreceiverKey).child("contact").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        if (snapshot.getValue().toString().equals("saved")) {
+                            btnSendMessage.setVisibility(View.VISIBLE);
+                            messageBox.setVisibility(View.VISIBLE);
+                        } else {
+                            btnSendMessage.setVisibility(View.GONE);
+                            messageBox.setVisibility(View.GONE);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+
+
             String senderRef = msgsenderKey + "/" + msgreceiverKey;
             rootRef.child("MessageState").child(senderRef).child("msgcount").setValue(0);
             rootRef.child("MessageState").child(senderRef).child("lastmessage").setValue(null);

@@ -182,6 +182,18 @@ public class RequestActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        currentState("offline");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        currentState("offline");
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (sender != null) {

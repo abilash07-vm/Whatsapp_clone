@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         Intent intent2 = new Intent(MainActivity.this, BrowserActivity.class);
+                                        intent2.putExtra("url", "https://abilash-2k20.web.app/");
                                         startActivity(intent2);
                                     }
                                 });
@@ -383,7 +384,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
-        super.onStart();
+        try {
+            super.onStart();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (currentUser == null) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);

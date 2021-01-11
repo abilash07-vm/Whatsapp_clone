@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.whatsappclone.AlertDialog.ProgressBar;
 import com.example.whatsappclone.MainActivity;
 import com.example.whatsappclone.R;
+import com.example.whatsappclone.settings.BrowserActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -28,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText email, password;
     private Button btnlogin, btnphone;
-    private TextView txtFrogetPass, txtSignUp, invalidemail;
+    private TextView txtFrogetPass, txtSignUp, invalidemail, privacypolicy;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference userRef;
     private ProgressBar progressBar;
@@ -42,6 +43,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+                startActivity(intent);
+            }
+        });
+        privacypolicy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, BrowserActivity.class);
+                intent.putExtra("url", "https://privacy-policy-2k21-211a4.web.app");
                 startActivity(intent);
             }
         });
@@ -149,6 +158,7 @@ public class LoginActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         userRef = FirebaseDatabase.getInstance().getReference().child("User");
         progressBar = new ProgressBar();
+        privacypolicy = findViewById(R.id.privacypolicy);
     }
 
 }

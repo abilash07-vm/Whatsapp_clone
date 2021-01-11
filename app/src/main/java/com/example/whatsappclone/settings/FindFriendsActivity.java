@@ -80,10 +80,14 @@ public class FindFriendsActivity extends AppCompatActivity {
         ArrayList<ChatsModel> chatsuggestion = new ArrayList<>();
         Log.d(TAG, "showSuggestion: all su " + names);
         for (String i : names) {
-            if (s.equalsIgnoreCase(i.substring(0, s.length()))) {
-                ChatsModel chat = new ChatsModel();
-                chat.setFrom(chats.get(names.indexOf(i)).getFrom());
-                chatsuggestion.add(chat);
+            try {
+                if (s.equalsIgnoreCase(i.substring(0, s.length()))) {
+                    ChatsModel chat = new ChatsModel();
+                    chat.setFrom(chats.get(names.indexOf(i)).getFrom());
+                    chatsuggestion.add(chat);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         Log.d(TAG, "showSuggestion: all suggestion" + chatsuggestion);

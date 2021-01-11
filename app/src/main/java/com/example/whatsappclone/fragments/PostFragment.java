@@ -284,7 +284,8 @@ public class PostFragment extends Fragment {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot i : snapshot.getChildren()) {
                         Log.d(TAG, "onChildAdded: " + i.getRef().getKey());
-                        allContact.add(i.getRef().getKey());
+                        if (i.child("contact").getValue().toString().equals("saved"))
+                            allContact.add(i.getRef().getKey());
 
                     }
                     collectAllPost();

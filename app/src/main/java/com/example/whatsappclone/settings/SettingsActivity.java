@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -56,6 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
     private DatabaseReference reference;
     private String userid;
     private StorageReference fileImgref;
+    private TextView privacypolicy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +73,17 @@ public class SettingsActivity extends AppCompatActivity {
                 btnUpdate.setEnabled(true);
             }
         });
+
+        privacypolicy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SettingsActivity.this, BrowserActivity.class);
+                intent.putExtra("url", "https://privacy-policy-2k21-211a4.web.app");
+                startActivity(intent);
+            }
+        });
+
+
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -277,5 +290,6 @@ public class SettingsActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         reference = FirebaseDatabase.getInstance().getReference();
         fileImgref = FirebaseStorage.getInstance().getReference().child("Profile Image");
+        privacypolicy = findViewById(R.id.privacypolicy);
     }
 }

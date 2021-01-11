@@ -42,11 +42,22 @@
         android:textSize="40sp"
         android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/privacypolicy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/status"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:text="Privacy Policy"
+        android:textColor="@color/colorPrimary" />
+
     <Button
         android:id="@+id/btnupdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/status"
+        android:layout_below="@+id/privacypolicy"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Update"
